@@ -30,10 +30,16 @@ from reportlab.lib.pagesizes import A4
 
 register_heif_opener()
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# main.py proje kökündeyse bunu kullan
+BASE_DIR = Path(__file__).resolve().parent
+
+# Eğer main.py app/ gibi alt klasördeyse bunu kullan:
+# BASE_DIR = Path(__file__).resolve().parent.parent
+
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 TEMP_DIR = BASE_DIR / "temp"
+SITEMAP_PATH = BASE_DIR / "sitemap.xml"
 
 STATIC_DIR.mkdir(exist_ok=True)
 TEMP_DIR.mkdir(exist_ok=True)
@@ -145,6 +151,7 @@ def parse_page_ranges(pages_text: str, total_pages: int) -> list[int]:
     pages_text = (pages_text or "").replace(" ", "")
     if not pages_text:
         raise ValueError("Please enter page numbers.")
+
     selected = set()
     for part in pages_text.split(","):
         if not part:
@@ -162,8 +169,10 @@ def parse_page_ranges(pages_text: str, total_pages: int) -> list[int]:
             p = int(part)
             if 1 <= p <= total_pages:
                 selected.add(p - 1)
+
     if not selected:
         raise ValueError("No valid pages selected.")
+
     return sorted(selected)
 
 
@@ -184,6 +193,7 @@ def extract_youtube_video_id(url: str) -> str | None:
                 return parsed.path.split("/shorts/")[-1].split("/")[0]
             if parsed.path.startswith("/embed/"):
                 return parsed.path.split("/embed/")[-1].split("/")[0]
+
         return None
     except Exception:
         return None
@@ -194,38 +204,157 @@ def clean_filename(name: str, fallback: str = "file") -> str:
     return name or fallback
 
 
+def remove_file_safely(path: Path | None):
+    if path:
+        try:
+            path.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-# PDF TOOLS
+# --------------------------------------------------
+# MAIN CATEGORY PAGES
+# --------------------------------------------------
 @app.get("/pdf", response_class=HTMLResponse)
 async def pdf_page(request: Request):
     return templates.TemplateResponse("pdf.html", {"request": request, "error": None})
 
 
+@app.get("/image", response_class=HTMLResponse)
+async def image_page(request: Request):
+    return templates.TemplateResponse("image.html", {"request": request, "error": None})
+
+
+@app.get("/office", response_class=HTMLResponse)
+async def office_page(request: Request):
+    return templates.TemplateResponse("office.html", {"request": request, "error": None})
+
+
+@app.get("/units", response_class=HTMLResponse)
+async def units_page(request: Request):
+    category = "length"
+    all_units = {
+        "temperature": list(TEMPERATURE_UNITS.keys()),
+        **{k: list(v.keys()) for k, v in UNIT_GROUPS.items()},
+    }
+    return templates.TemplateResponse(
+        "units.html",
+        {
+            "request": request,
+            "result": None,
+            "selected_category": category,
+            "units": get_units_for_category(category),
+            "all_units": all_units,
+            "error": None,
+        },
+    )
+
+
+@app.post("/units", response_class=HTMLResponse)
+async def convert_units(
+    request: Request,
+    category: str = Form(...),
+    from_unit: str = Form(...),
+    to_unit: str = Form(...),
+    value: float = Form(...),
+):
+    try:
+        units = get_units_for_category(category)
+        if category == "temperature":
+            result = convert_temperature(value, from_unit, to_unit)
+        else:
+            base_value = value * units[from_unit]
+            result = base_value / units[to_unit]
+
+        all_units = {
+            "temperature": list(TEMPERATURE_UNITS.keys()),
+            **{k: list(v.keys()) for k, v in UNIT_GROUPS.items()},
+        }
+
+        return templates.TemplateResponse(
+            "units.html",
+            {
+                "request": request,
+                "result": f"{result:.10f}".rstrip("0").rstrip("."),
+                "selected_category": category,
+                "units": units,
+                "all_units": all_units,
+                "error": None,
+                "from_unit": from_unit,
+                "to_unit": to_unit,
+                "value": value,
+            },
+        )
+    except Exception as e:
+        all_units = {
+            "temperature": list(TEMPERATURE_UNITS.keys()),
+            **{k: list(v.keys()) for k, v in UNIT_GROUPS.items()},
+        }
+        return templates.TemplateResponse(
+            "units.html",
+            {
+                "request": request,
+                "result": None,
+                "selected_category": category,
+                "units": get_units_for_category(category),
+                "all_units": all_units,
+                "error": f"Error: {str(e)}",
+            },
+            status_code=400,
+        )
+
+
+@app.get("/utility", response_class=HTMLResponse)
+async def utility_page(request: Request):
+    return templates.TemplateResponse(
+        "utility.html",
+        {"request": request, "result": None, "error": None},
+    )
+
+
+# --------------------------------------------------
+# PDF TOOLS
+# --------------------------------------------------
+@app.get("/merge-pdf", response_class=HTMLResponse)
+async def merge_pdf_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/merge_pdf.html",
+        {"request": request, "error": None},
+    )
+
+
+@app.post("/merge-pdf", response_class=HTMLResponse)
 @app.post("/merge", response_class=HTMLResponse)
 async def merge_pdfs(request: Request, files: list[UploadFile] = File(...)):
     writer = PdfWriter()
-    temp_files = []
+    temp_files: list[Path] = []
+
     try:
         valid_count = 0
+
         for uploaded in files:
             if not uploaded.filename or not uploaded.filename.lower().endswith(".pdf"):
                 continue
+
             temp_path = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(uploaded.filename)}"
             with open(temp_path, "wb") as buffer:
                 shutil.copyfileobj(uploaded.file, buffer)
+
             if temp_path.stat().st_size == 0:
-                temp_path.unlink(missing_ok=True)
+                remove_file_safely(temp_path)
                 continue
+
             temp_files.append(temp_path)
             valid_count += 1
 
         if valid_count < 2:
             return templates.TemplateResponse(
-                "pdf.html",
+                "tools/merge_pdf.html",
                 {"request": request, "error": "Select at least 2 valid PDF files."},
                 status_code=400,
             )
@@ -245,21 +374,36 @@ async def merge_pdfs(request: Request, files: list[UploadFile] = File(...)):
             headers={"Content-Disposition": 'attachment; filename="merged.pdf"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "tools/merge_pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
         for temp_path in temp_files:
-            try:
-                temp_path.unlink(missing_ok=True)
-            except Exception:
-                pass
+            remove_file_safely(temp_path)
 
 
+@app.get("/split-pdf", response_class=HTMLResponse)
+async def split_pdf_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/split_pdf.html",
+        {"request": request, "error": None},
+    )
+
+
+@app.post("/split-pdf", response_class=HTMLResponse)
 @app.post("/split", response_class=HTMLResponse)
 async def split_pdf(request: Request, file: UploadFile = File(...)):
     temp_input = None
+
     try:
         if not file.filename or not file.filename.lower().endswith(".pdf"):
-            return templates.TemplateResponse("pdf.html", {"request": request, "error": "Please upload a PDF file."}, status_code=400)
+            return templates.TemplateResponse(
+                "tools/split_pdf.html",
+                {"request": request, "error": "Please upload a PDF file."},
+                status_code=400,
+            )
 
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
@@ -279,13 +423,61 @@ async def split_pdf(request: Request, file: UploadFile = File(...)):
             headers={"Content-Disposition": 'attachment; filename="split_first_page.pdf"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "tools/split_pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
+
+
+@app.get("/compress-pdf", response_class=HTMLResponse)
+async def compress_pdf_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/compress_pdf.html",
+        {"request": request, "error": None},
+    )
+
+
+@app.post("/compress-pdf", response_class=HTMLResponse)
+@app.post("/pdf-compress", response_class=HTMLResponse)
+async def pdf_compress(request: Request, file: UploadFile = File(...)):
+    temp_input = None
+    output_path = None
+
+    try:
+        if not file.filename or not file.filename.lower().endswith(".pdf"):
+            return templates.TemplateResponse(
+                "tools/compress_pdf.html",
+                {"request": request, "error": "Please upload a PDF file."},
+                status_code=400,
+            )
+
+        temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
+        output_path = TEMP_DIR / f"compressed_{uuid.uuid4().hex}.pdf"
+
+        with open(temp_input, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        doc = fitz.open(str(temp_input))
+        doc.save(str(output_path), garbage=4, deflate=True)
+        doc.close()
+
+        return FileResponse(
+            path=str(output_path),
+            media_type="application/pdf",
+            filename="compressed.pdf",
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "tools/compress_pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
+    finally:
+        remove_file_safely(temp_input)
+        # output_path FileResponse sonrası kalır; çok istersen ayrı cleanup sistemi eklenir
 
 
 @app.post("/jpg-to-pdf", response_class=HTMLResponse)
@@ -299,7 +491,11 @@ async def jpg_to_pdf(request: Request, files: list[UploadFile] = File(...)):
                 images.append(img)
 
         if not images:
-            return templates.TemplateResponse("pdf.html", {"request": request, "error": "Please select valid images."}, status_code=400)
+            return templates.TemplateResponse(
+                "pdf.html",
+                {"request": request, "error": "Please select valid images."},
+                status_code=400,
+            )
 
         pdf_buffer = io.BytesIO()
         first, rest = images[0], images[1:]
@@ -312,13 +508,34 @@ async def jpg_to_pdf(request: Request, files: list[UploadFile] = File(...)):
             headers={"Content-Disposition": 'attachment; filename="images_to_pdf.pdf"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
+
+
+@app.get("/pdf-to-word", response_class=HTMLResponse)
+async def pdf_to_word_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/pdf_to_word.html",
+        {"request": request, "error": None},
+    )
 
 
 @app.post("/pdf-to-word", response_class=HTMLResponse)
 async def pdf_to_word(request: Request, file: UploadFile = File(...)):
     temp_input = None
+    output_path = None
+
     try:
+        if not file.filename or not file.filename.lower().endswith(".pdf"):
+            return templates.TemplateResponse(
+                "tools/pdf_to_word.html",
+                {"request": request, "error": "Please upload a PDF file."},
+                status_code=400,
+            )
+
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -345,19 +562,28 @@ async def pdf_to_word(request: Request, file: UploadFile = File(...)):
             filename="pdf_to_word.docx",
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "tools/pdf_to_word.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
 @app.post("/pdf-to-excel", response_class=HTMLResponse)
 async def pdf_to_excel(request: Request, file: UploadFile = File(...)):
     temp_input = None
+    output_path = None
+
     try:
+        if not file.filename or not file.filename.lower().endswith(".pdf"):
+            return templates.TemplateResponse(
+                "pdf.html",
+                {"request": request, "error": "Please upload a PDF file."},
+                status_code=400,
+            )
+
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -389,19 +615,27 @@ async def pdf_to_excel(request: Request, file: UploadFile = File(...)):
             filename="pdf_to_excel.xlsx",
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
 @app.post("/pdf-to-jpg", response_class=HTMLResponse)
 async def pdf_to_jpg(request: Request, file: UploadFile = File(...)):
     temp_input = None
+
     try:
+        if not file.filename or not file.filename.lower().endswith(".pdf"):
+            return templates.TemplateResponse(
+                "pdf.html",
+                {"request": request, "error": "Please upload a PDF file."},
+                status_code=400,
+            )
+
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -410,6 +644,7 @@ async def pdf_to_jpg(request: Request, file: UploadFile = File(...)):
         page = pdf_doc.load_page(0)
         pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
         img_bytes = pix.tobytes("jpg")
+        pdf_doc.close()
 
         return Response(
             content=img_bytes,
@@ -417,54 +652,26 @@ async def pdf_to_jpg(request: Request, file: UploadFile = File(...)):
             headers={"Content-Disposition": 'attachment; filename="pdf_first_page.jpg"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
-    finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
-
-
-@app.post("/pdf-compress", response_class=HTMLResponse)
-async def pdf_compress(request: Request, file: UploadFile = File(...)):
-    temp_input = None
-    output_path = None
-    try:
-        if not file.filename or not file.filename.lower().endswith(".pdf"):
-            return templates.TemplateResponse("pdf.html", {"request": request, "error": "Please upload a PDF file."}, status_code=400)
-
-        temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
-        output_path = TEMP_DIR / f"compressed_{uuid.uuid4().hex}.pdf"
-
-        with open(temp_input, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        doc = fitz.open(str(temp_input))
-        doc.save(str(output_path), garbage=4, deflate=True)
-        doc.close()
-
-        return FileResponse(
-            path=str(output_path),
-            media_type="application/pdf",
-            filename="compressed.pdf",
+        return templates.TemplateResponse(
+            "pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
         )
-    except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
 @app.post("/pdf-rotate", response_class=HTMLResponse)
 async def pdf_rotate(request: Request, file: UploadFile = File(...), angle: int = Form(...)):
     temp_input = None
+
     try:
         if angle not in [90, 180, 270]:
-            return templates.TemplateResponse("pdf.html", {"request": request, "error": "Angle must be 90, 180 or 270."}, status_code=400)
+            return templates.TemplateResponse(
+                "pdf.html",
+                {"request": request, "error": "Angle must be 90, 180 or 270."},
+                status_code=400,
+            )
 
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
@@ -487,19 +694,27 @@ async def pdf_rotate(request: Request, file: UploadFile = File(...), angle: int 
             headers={"Content-Disposition": 'attachment; filename="rotated.pdf"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
 @app.post("/pdf-remove-pages", response_class=HTMLResponse)
 async def pdf_remove_pages(request: Request, file: UploadFile = File(...), pages: str = Form(...)):
     temp_input = None
+
     try:
+        if not file.filename or not file.filename.lower().endswith(".pdf"):
+            return templates.TemplateResponse(
+                "pdf.html",
+                {"request": request, "error": "Please upload a PDF file."},
+                status_code=400,
+            )
+
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -523,19 +738,77 @@ async def pdf_remove_pages(request: Request, file: UploadFile = File(...), pages
             headers={"Content-Disposition": 'attachment; filename="removed_pages.pdf"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("pdf.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
+# --------------------------------------------------
 # IMAGE TOOLS
-@app.get("/image", response_class=HTMLResponse)
-async def image_page(request: Request):
-    return templates.TemplateResponse("image.html", {"request": request, "error": None})
+# --------------------------------------------------
+@app.get("/heic-to-jpg", response_class=HTMLResponse)
+async def heic_to_jpg_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/heic_to_jpg.html",
+        {"request": request, "error": None},
+    )
+
+
+@app.post("/heic-to-jpg", response_class=HTMLResponse)
+async def heic_to_jpg(request: Request, file: UploadFile = File(...)):
+    try:
+        data = await file.read()
+        img = Image.open(io.BytesIO(data)).convert("RGB")
+        output = io.BytesIO()
+        img.save(output, "JPEG", quality=95)
+        output.seek(0)
+
+        return Response(
+            content=output.getvalue(),
+            media_type="image/jpeg",
+            headers={"Content-Disposition": 'attachment; filename="converted.jpg"'},
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "tools/heic_to_jpg.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
+
+
+@app.get("/image-compressor", response_class=HTMLResponse)
+async def image_compressor_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/image_compressor.html",
+        {"request": request, "error": None},
+    )
+
+
+@app.post("/image-compressor", response_class=HTMLResponse)
+@app.post("/compress-image", response_class=HTMLResponse)
+async def compress_image(request: Request, file: UploadFile = File(...), quality: int = Form(70)):
+    try:
+        data = await file.read()
+        img = Image.open(io.BytesIO(data)).convert("RGB")
+        output = io.BytesIO()
+        img.save(output, "JPEG", quality=max(10, min(95, quality)), optimize=True)
+        output.seek(0)
+
+        return Response(
+            content=output.getvalue(),
+            media_type="image/jpeg",
+            headers={"Content-Disposition": 'attachment; filename="compressed.jpg"'},
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "tools/image_compressor.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
 
 
 @app.post("/convert-image", response_class=HTMLResponse)
@@ -561,7 +834,11 @@ async def convert_image(request: Request, file: UploadFile = File(...), target_f
             media_type = "image/webp"
             filename = "converted.webp"
         else:
-            return templates.TemplateResponse("image.html", {"request": request, "error": "Unsupported target format."}, status_code=400)
+            return templates.TemplateResponse(
+                "image.html",
+                {"request": request, "error": "Unsupported target format."},
+                status_code=400,
+            )
 
         output.seek(0)
         return Response(
@@ -570,11 +847,20 @@ async def convert_image(request: Request, file: UploadFile = File(...), target_f
             headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("image.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "image.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
 
 
 @app.post("/resize-image", response_class=HTMLResponse)
-async def resize_image(request: Request, file: UploadFile = File(...), width: int = Form(...), height: int = Form(...)):
+async def resize_image(
+    request: Request,
+    file: UploadFile = File(...),
+    width: int = Form(...),
+    height: int = Form(...),
+):
     try:
         data = await file.read()
         img = Image.open(io.BytesIO(data)).convert("RGB")
@@ -582,30 +868,18 @@ async def resize_image(request: Request, file: UploadFile = File(...), width: in
         output = io.BytesIO()
         resized.save(output, "JPEG", quality=95)
         output.seek(0)
+
         return Response(
             content=output.getvalue(),
             media_type="image/jpeg",
             headers={"Content-Disposition": 'attachment; filename="resized.jpg"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("image.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
-
-
-@app.post("/compress-image", response_class=HTMLResponse)
-async def compress_image(request: Request, file: UploadFile = File(...), quality: int = Form(70)):
-    try:
-        data = await file.read()
-        img = Image.open(io.BytesIO(data)).convert("RGB")
-        output = io.BytesIO()
-        img.save(output, "JPEG", quality=max(10, min(95, quality)), optimize=True)
-        output.seek(0)
-        return Response(
-            content=output.getvalue(),
-            media_type="image/jpeg",
-            headers={"Content-Disposition": 'attachment; filename="compressed.jpg"'},
+        return templates.TemplateResponse(
+            "image.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
         )
-    except Exception as e:
-        return templates.TemplateResponse("image.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
 
 
 @app.post("/remove-bg-basic", response_class=HTMLResponse)
@@ -634,7 +908,11 @@ async def remove_bg_basic(request: Request, file: UploadFile = File(...), thresh
             headers={"Content-Disposition": 'attachment; filename="background_removed.png"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("image.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "image.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
 
 
 @app.post("/image-to-svg", response_class=HTMLResponse)
@@ -646,9 +924,9 @@ async def image_to_svg(request: Request, file: UploadFile = File(...)):
         mime = file.content_type or "image/png"
         b64 = base64.b64encode(data).decode("utf-8")
 
-        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
+        svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
   <image href="data:{mime};base64,{b64}" x="0" y="0" width="{width}" height="{height}" />
-</svg>'''
+</svg>"""
 
         return Response(
             content=svg.encode("utf-8"),
@@ -656,7 +934,11 @@ async def image_to_svg(request: Request, file: UploadFile = File(...)):
             headers={"Content-Disposition": 'attachment; filename="image.svg"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("image.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "image.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
 
 
 @app.post("/reduce-image-size", response_class=HTMLResponse)
@@ -674,18 +956,21 @@ async def reduce_image_size(request: Request, file: UploadFile = File(...), qual
             headers={"Content-Disposition": 'attachment; filename="reduced.webp"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("image.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "image.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
 
 
+# --------------------------------------------------
 # OFFICE TOOLS
-@app.get("/office", response_class=HTMLResponse)
-async def office_page(request: Request):
-    return templates.TemplateResponse("office.html", {"request": request, "error": None})
-
-
+# --------------------------------------------------
 @app.post("/csv-to-excel", response_class=HTMLResponse)
 async def csv_to_excel(request: Request, file: UploadFile = File(...)):
     temp_input = None
+    output_path = None
+
     try:
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
@@ -701,18 +986,19 @@ async def csv_to_excel(request: Request, file: UploadFile = File(...)):
             filename="converted.xlsx",
         )
     except Exception as e:
-        return templates.TemplateResponse("office.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "office.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
 @app.post("/excel-to-csv", response_class=HTMLResponse)
 async def excel_to_csv(request: Request, file: UploadFile = File(...)):
     temp_input = None
+
     try:
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
@@ -727,17 +1013,19 @@ async def excel_to_csv(request: Request, file: UploadFile = File(...)):
             headers={"Content-Disposition": 'attachment; filename="converted.csv"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("office.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "office.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
 @app.post("/txt-to-docx", response_class=HTMLResponse)
 async def txt_to_docx(request: Request, file: UploadFile = File(...)):
+    output_path = None
+
     try:
         data = await file.read()
         text = data.decode("utf-8", errors="ignore")
@@ -754,12 +1042,17 @@ async def txt_to_docx(request: Request, file: UploadFile = File(...)):
             filename="converted.docx",
         )
     except Exception as e:
-        return templates.TemplateResponse("office.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "office.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
 
 
 @app.post("/docx-to-txt", response_class=HTMLResponse)
 async def docx_to_txt(request: Request, file: UploadFile = File(...)):
     temp_input = None
+
     try:
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
@@ -774,19 +1067,37 @@ async def docx_to_txt(request: Request, file: UploadFile = File(...)):
             headers={"Content-Disposition": 'attachment; filename="converted.txt"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("office.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "office.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
+@app.get("/word-to-pdf", response_class=HTMLResponse)
+async def word_to_pdf_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/word_to_pdf.html",
+        {"request": request, "error": None},
+    )
+
+
+@app.post("/word-to-pdf", response_class=HTMLResponse)
 @app.post("/docx-to-pdf", response_class=HTMLResponse)
 async def docx_to_pdf(request: Request, file: UploadFile = File(...)):
     temp_input = None
+    output_path = None
+
     try:
+        if not file.filename or not file.filename.lower().endswith(".docx"):
+            return templates.TemplateResponse(
+                "tools/word_to_pdf.html",
+                {"request": request, "error": "Please upload a DOCX file."},
+                status_code=400,
+            )
+
         temp_input = TEMP_DIR / f"{uuid.uuid4().hex}_{clean_filename(file.filename)}"
         with open(temp_input, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -795,19 +1106,29 @@ async def docx_to_pdf(request: Request, file: UploadFile = File(...)):
         output_path = TEMP_DIR / f"{uuid.uuid4().hex}.pdf"
 
         c = canvas.Canvas(str(output_path), pagesize=A4)
-        width, height = A4
-        y = height - 50
+        _, height = A4
+        left_margin = 50
+        top_margin = height - 50
+        y = top_margin
+        max_chars = 95
 
         for paragraph in doc.paragraphs:
             text = paragraph.text.strip()
+
             if not text:
                 y -= 16
+                if y < 50:
+                    c.showPage()
+                    y = top_margin
                 continue
-            c.drawString(50, y, text[:100])
-            y -= 18
-            if y < 50:
-                c.showPage()
-                y = height - 50
+
+            chunks = [text[i:i + max_chars] for i in range(0, len(text), max_chars)]
+            for chunk in chunks:
+                c.drawString(left_margin, y, chunk)
+                y -= 18
+                if y < 50:
+                    c.showPage()
+                    y = top_margin
 
         c.save()
 
@@ -817,79 +1138,108 @@ async def docx_to_pdf(request: Request, file: UploadFile = File(...)):
             filename="converted.pdf",
         )
     except Exception as e:
-        return templates.TemplateResponse("office.html", {"request": request, "error": f"Error: {str(e)}"}, status_code=500)
+        return templates.TemplateResponse(
+            "tools/word_to_pdf.html",
+            {"request": request, "error": f"Error: {str(e)}"},
+            status_code=500,
+        )
     finally:
-        if temp_input:
-            try:
-                temp_input.unlink(missing_ok=True)
-            except Exception:
-                pass
+        remove_file_safely(temp_input)
 
 
-# UNITS
-@app.get("/units", response_class=HTMLResponse)
-async def units_page(request: Request):
-    category = "length"
-    all_units = {"temperature": list(TEMPERATURE_UNITS.keys()), **{k: list(v.keys()) for k, v in UNIT_GROUPS.items()}}
+# --------------------------------------------------
+# UTILITY TOOLS
+# --------------------------------------------------
+@app.get("/uuid-generator", response_class=HTMLResponse)
+async def uuid_generator_page(request: Request):
     return templates.TemplateResponse(
-        "units.html",
-        {
-            "request": request,
-            "result": None,
-            "selected_category": category,
-            "units": get_units_for_category(category),
-            "all_units": all_units,
-            "error": None,
-        },
+        "tools/uuid_generator.html",
+        {"request": request, "error": None},
     )
 
 
-@app.post("/units", response_class=HTMLResponse)
-async def convert_units(request: Request, category: str = Form(...), from_unit: str = Form(...), to_unit: str = Form(...), value: float = Form(...)):
-    try:
-        units = get_units_for_category(category)
-        if category == "temperature":
-            result = convert_temperature(value, from_unit, to_unit)
-        else:
-            base_value = value * units[from_unit]
-            result = base_value / units[to_unit]
+@app.get("/qr-code-generator", response_class=HTMLResponse)
+async def qr_generator_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/qr_generator.html",
+        {"request": request, "error": None},
+    )
 
-        all_units = {"temperature": list(TEMPERATURE_UNITS.keys()), **{k: list(v.keys()) for k, v in UNIT_GROUPS.items()}}
+
+@app.get("/password-generator", response_class=HTMLResponse)
+async def password_generator_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/password_generator.html",
+        {"request": request, "error": None, "result": None},
+    )
+
+
+@app.post("/password-generator", response_class=HTMLResponse)
+@app.post("/password-generate", response_class=HTMLResponse)
+async def password_generate(request: Request, length: int = Form(16), use_symbols: str = Form("true")):
+    try:
+        length = max(6, min(128, int(length)))
+        chars = string.ascii_letters + string.digits
+        if str(use_symbols).lower() == "true":
+            chars += "!@#$%^&*()-_=+[]{};:,.?/"
+
+        pwd = "".join(secrets.choice(chars) for _ in range(length))
 
         return templates.TemplateResponse(
-            "units.html",
-            {
-                "request": request,
-                "result": f"{result:.10f}".rstrip("0").rstrip("."),
-                "selected_category": category,
-                "units": units,
-                "all_units": all_units,
-                "error": None,
-                "from_unit": from_unit,
-                "to_unit": to_unit,
-                "value": value,
-            },
+            "tools/password_generator.html",
+            {"request": request, "result": pwd, "error": None},
         )
     except Exception as e:
-        all_units = {"temperature": list(TEMPERATURE_UNITS.keys()), **{k: list(v.keys()) for k, v in UNIT_GROUPS.items()}}
         return templates.TemplateResponse(
-            "units.html",
-            {
-                "request": request,
-                "result": None,
-                "selected_category": category,
-                "units": get_units_for_category(category),
-                "all_units": all_units,
-                "error": f"Error: {str(e)}",
-            },
-            status_code=400,
+            "tools/password_generator.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+            status_code=500,
         )
 
 
-# UTILITY
-@app.get("/utility", response_class=HTMLResponse)
-async def utility_page(request: Request):
-    return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": None})
+@app.get("/json-formatter", response_class=HTMLResponse)
+async def json_formatter_page(request: Request):
+    return templates.TemplateResponse(
+        "tools/json_formatter.html",
+        {"request": request, "error": None, "result": None},
+    )
+
+
+@app.post("/json-formatter", response_class=HTMLResponse)
+async def json_formatter(request: Request, text: str = Form(...)):
+    try:
+        parsed = json.loads(text)
+        result = json.dumps(parsed, indent=4, ensure_ascii=False)
+        return templates.TemplateResponse(
+            "tools/json_formatter.html",
+            {"request": request, "result": result, "error": None},
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "tools/json_formatter.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
+
+
+@app.post("/qr-generate", response_class=HTMLResponse)
+async def qr_generate_utility(request: Request, text: str = Form(...)):
+    try:
+        img = qrcode.make(text)
+        output = io.BytesIO()
+        img.save(output, format="PNG")
+        output.seek(0)
+
+        return Response(
+            content=output.getvalue(),
+            media_type="image/png",
+            headers={"Content-Disposition": 'attachment; filename="qr.png"'},
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "error": f"Error: {str(e)}", "result": None},
+            status_code=500,
+        )
 
 
 @app.post("/word-counter", response_class=HTMLResponse)
@@ -899,76 +1249,50 @@ async def word_counter(request: Request, text: str = Form(...)):
     lines = len(text.splitlines()) if text else 0
     reading_time = max(1, round(words / 200)) if words else 0
     result = f"Words: {words} | Characters: {chars} | Lines: {lines} | Reading time: {reading_time} min"
-    return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
 
-
-@app.post("/json-formatter", response_class=HTMLResponse)
-async def json_formatter(request: Request, text: str = Form(...)):
-    try:
-        parsed = json.loads(text)
-        result = json.dumps(parsed, indent=4, ensure_ascii=False)
-        return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
-    except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+    return templates.TemplateResponse(
+        "utility.html",
+        {"request": request, "result": result, "error": None},
+    )
 
 
 @app.post("/base64-encode", response_class=HTMLResponse)
 async def base64_encode_tool(request: Request, text: str = Form(...)):
     result = base64.b64encode(text.encode("utf-8")).decode("utf-8")
-    return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
+    return templates.TemplateResponse(
+        "utility.html",
+        {"request": request, "result": result, "error": None},
+    )
 
 
 @app.post("/base64-decode", response_class=HTMLResponse)
 async def base64_decode_tool(request: Request, text: str = Form(...)):
     try:
         result = base64.b64decode(text.encode("utf-8")).decode("utf-8", errors="ignore")
-        return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
-    except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
-
-
-@app.post("/qr-generate", response_class=HTMLResponse)
-async def qr_generate(request: Request, text: str = Form(...)):
-    try:
-        img = qrcode.make(text)
-        output = io.BytesIO()
-        img.save(output, format="PNG")
-        output.seek(0)
-        return Response(
-            content=output.getvalue(),
-            media_type="image/png",
-            headers={"Content-Disposition": 'attachment; filename="qr.png"'},
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": result, "error": None},
         )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/markdown-to-html", response_class=HTMLResponse)
 async def markdown_to_html(request: Request, text: str = Form(...)):
     try:
         html = md.markdown(text, extensions=["tables", "fenced_code"])
-        return templates.TemplateResponse("utility.html", {"request": request, "result": html, "error": None})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": html, "error": None},
+        )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
-
-
-@app.post("/uuid-generate", response_class=HTMLResponse)
-async def uuid_generate(request: Request):
-    result = str(uuid.uuid4())
-    return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
-
-
-@app.post("/password-generate", response_class=HTMLResponse)
-async def password_generate(request: Request, length: int = Form(16), use_symbols: bool = Form(True)):
-    try:
-        length = max(6, min(128, length))
-        chars = string.ascii_letters + string.digits
-        if use_symbols:
-            chars += "!@#$%^&*()-_=+[]{};:,.?/"
-        pwd = "".join(secrets.choice(chars) for _ in range(length))
-        return templates.TemplateResponse("utility.html", {"request": request, "result": pwd, "error": None})
-    except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/youtube-thumbnail", response_class=HTMLResponse)
@@ -976,12 +1300,22 @@ async def youtube_thumbnail(request: Request, url: str = Form(...)):
     try:
         video_id = extract_youtube_video_id(url)
         if not video_id:
-            return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": "Invalid YouTube URL."}, status_code=400)
+            return templates.TemplateResponse(
+                "utility.html",
+                {"request": request, "result": None, "error": "Invalid YouTube URL."},
+                status_code=400,
+            )
 
         thumb_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
-        return templates.TemplateResponse("utility.html", {"request": request, "result": thumb_url, "error": None})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": thumb_url, "error": None},
+        )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/case-converter", response_class=HTMLResponse)
@@ -1000,9 +1334,16 @@ async def case_converter(request: Request, text: str = Form(...), mode: str = Fo
             result = parts[0].lower() + "".join(word.capitalize() for word in parts[1:]) if parts else ""
         else:
             result = text
-        return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
+
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": result, "error": None},
+        )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/age-calculator", response_class=HTMLResponse)
@@ -1013,9 +1354,16 @@ async def age_calculator(request: Request, birthdate: str = Form(...)):
         years = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
         days = (today - born).days
         result = f"Age: {years} years | Total days: {days}"
-        return templates.TemplateResponse("utility.html", {"request": request, "result": result, "error": None})
+
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": result, "error": None},
+        )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/favicon-generator", response_class=HTMLResponse)
@@ -1027,13 +1375,17 @@ async def favicon_generator(request: Request, file: UploadFile = File(...)):
         output = io.BytesIO()
         img.save(output, format="ICO", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
         output.seek(0)
+
         return Response(
             content=output.getvalue(),
             media_type="image/x-icon",
             headers={"Content-Disposition": 'attachment; filename="favicon.ico"'},
         )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/csv-viewer", response_class=HTMLResponse)
@@ -1042,9 +1394,16 @@ async def csv_viewer(request: Request, file: UploadFile = File(...)):
         data = await file.read()
         df = pd.read_csv(io.BytesIO(data))
         html_table = df.head(100).to_html(classes="table-view", index=False, border=0)
-        return templates.TemplateResponse("utility.html", {"request": request, "result": html_table, "error": None})
+
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": html_table, "error": None},
+        )
     except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
 
 
 @app.post("/kml-viewer", response_class=HTMLResponse)
@@ -1052,94 +1411,28 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
     try:
         data = await file.read()
         text = data.decode("utf-8", errors="ignore")
-        return templates.TemplateResponse("utility.html", {"request": request, "result": text[:20000], "error": None})
-    except Exception as e:
-        return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
 
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": text[:20000], "error": None},
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "utility.html",
+            {"request": request, "result": None, "error": f"Error: {str(e)}"},
+        )
+
+
+# --------------------------------------------------
+# SITEMAP
+# --------------------------------------------------
+SITEMAP_PATH = BASE_DIR / "sitemap.xml"
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
-    return FileResponse("sitemap.xml")
+    return FileResponse(str(SITEMAP_PATH), media_type="application/xml")
 
+ROBOTS_PATH = BASE_DIR / "robots.txt"
 
-@app.get("/merge-pdf", response_class=HTMLResponse)
-async def merge_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
-
-
-@app.get("/split-pdf", response_class=HTMLResponse)
-async def split_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/split_pdf.html", {"request": request})
-
-
-@app.get("/compress-pdf", response_class=HTMLResponse)
-async def compress_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/compress_pdf.html", {"request": request})
-
-
-@app.get("/heic-to-jpg", response_class=HTMLResponse)
-async def heic_to_jpg_page(request: Request):
-    return templates.TemplateResponse("tools/heic_to_jpg.html", {"request": request})
-
-
-@app.get("/image-compressor", response_class=HTMLResponse)
-async def image_compressor_page(request: Request):
-    return templates.TemplateResponse("tools/image_compressor.html", {"request": request})
-
-
-@app.get("/uuid-generator", response_class=HTMLResponse)
-async def uuid_generator_page(request: Request):
-    return templates.TemplateResponse("tools/uuid_generator.html", {"request": request})
-
-
-@app.get("/pdf-to-word", response_class=HTMLResponse)
-async def pdf_to_word_page(request: Request):
-    return templates.TemplateResponse("tools/pdf_to_word.html", {"request": request})
-
-
-@app.get("/word-to-pdf", response_class=HTMLResponse)
-async def word_to_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/word_to_pdf.html", {"request": request})
-
-
-@app.get("/qr-code-generator", response_class=HTMLResponse)
-async def qr_generator_page(request: Request):
-    return templates.TemplateResponse("tools/qr_generator.html", {"request": request})
-
-
-@app.get("/password-generator", response_class=HTMLResponse)
-async def password_generator_page(request: Request):
-    return templates.TemplateResponse("tools/password_generator.html", {"request": request})
-
-
-@app.get("/json-formatter", response_class=HTMLResponse)
-async def json_formatter_page(request: Request):
-    return templates.TemplateResponse("tools/json_formatter.html", {"request": request})
-
-@app.get("/uuid-generator", response_class=HTMLResponse)
-async def uuid_generator_page(request: Request):
-    return templates.TemplateResponse("tools/uuid_generator.html", {"request": request})
-
-
-@app.get("/pdf-to-word", response_class=HTMLResponse)
-async def pdf_to_word_page(request: Request):
-    return templates.TemplateResponse("tools/pdf_to_word.html", {"request": request})
-
-
-@app.get("/word-to-pdf", response_class=HTMLResponse)
-async def word_to_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/word_to_pdf.html", {"request": request})
-
-
-@app.get("/qr-code-generator", response_class=HTMLResponse)
-async def qr_generator_page(request: Request):
-    return templates.TemplateResponse("tools/qr_generator.html", {"request": request})
-
-
-@app.get("/password-generator", response_class=HTMLResponse)
-async def password_generator_page(request: Request):
-    return templates.TemplateResponse("tools/password_generator.html", {"request": request})
-
-
-@app.get("/json-formatter", response_class=HTMLResponse)
-async def json_formatter_page(request: Request):
-    return templates.TemplateResponse("tools/json_formatter.html", {"request": request})
+@app.get("/robots.txt", include_in_schema=False)
+def robots():
+    return FileResponse(str(ROBOTS_PATH), media_type="text/plain")

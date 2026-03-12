@@ -1,16 +1,36 @@
 {% extends "base.html" %}
-
+{% block title %}Word to PDF | ToolNova{% endblock %}
+{% block meta_description %}Convert Word to PDF online free. Upload DOCX and download PDF instantly with ToolNova.{% endblock %}
 {% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
+    <h1>Word to PDF</h1>
+    <p>Convert DOC or DOCX files to PDF.</p>
+</section>
 
-<h1>Word to PDF Converter</h1>
-<p>Convert DOCX files to PDF.</p>
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Word to PDF Converter</h3>
+            <form action="/word-to-pdf" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+                </div>
+                <button class="btn-blue" type="submit">Convert to PDF</button>
+            </form>
+        </div>
 
-<form action="/docx-to-pdf" method="post" enctype="multipart/form-data">
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+    </div>
 
-    <input type="file" name="file" accept=".doc,.docx" required>
-
-    <button type="submit">Convert</button>
-
-</form>
-
+    <div class="card">
+        <h2>Why this tool matters</h2>
+        <div class="tool-list">
+            <div class="tool-item"><strong>DOCX to PDF</strong><span class="muted">Useful for sharing fixed-layout documents.</span></div>
+            <div class="tool-item"><strong>Fast export</strong><span class="muted">Simple browser-based conversion.</span></div>
+            <div class="tool-item"><strong>Common need</strong><span class="muted">Students, offices and freelancers use it daily.</span></div>
+        </div>
+    </div>
+</div>
 {% endblock %}

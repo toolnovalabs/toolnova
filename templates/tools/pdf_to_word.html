@@ -1,16 +1,48 @@
 {% extends "base.html" %}
 
+{% block title %}PDF to Word Converter Online | ToolNova{% endblock %}
+{% block meta_description %}Convert PDF to Word online free and download editable DOCX files with ToolNova.{% endblock %}
 {% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
+    <h1>PDF to Word Converter</h1>
+    <p>Convert PDF files into editable Word documents quickly and easily.</p>
+</section>
 
-<h1>PDF to Word Converter</h1>
-<p>Convert PDF files to editable Word documents.</p>
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Convert PDF to Word</h3>
 
-<form action="/pdf-to-word" method="post" enctype="multipart/form-data">
+            <form action="/pdf-to-word" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
 
-<input type="file" name="file" accept=".pdf" required>
+                <button class="btn-blue" type="submit">Convert to Word</button>
+            </form>
+        </div>
 
-<button type="submit">Convert</button>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+    </div>
 
-</form>
-
+    <div class="card">
+        <h2>Why convert PDF to Word?</h2>
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Edit documents</strong>
+                <span class="muted">Convert PDFs to editable DOCX format.</span>
+            </div>
+            <div class="tool-item">
+                <strong>Reuse content</strong>
+                <span class="muted">Extract text and tables for editing.</span>
+            </div>
+            <div class="tool-item">
+                <strong>Common office workflow</strong>
+                <span class="muted">Useful for reports, forms and documents.</span>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

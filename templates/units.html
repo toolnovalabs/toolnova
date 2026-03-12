@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Unit Converter{% endblock %}
-
+{% block meta_description %}Detailed online unit converter for length, weight, area, temperature, pressure and more.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#059669 0%,#0f172a 100%);">
     <h1>Detailed Unit Converter</h1>
@@ -9,46 +9,58 @@
 
 <div class="grid-2">
     <div class="card">
-        <form method="post" action="/units">
-            <div class="field">
-                <label>Category</label>
-                <select name="category" id="categorySelect">
-                    <option value="length" {% if selected_category == 'length' %}selected{% endif %}>Length</option>
-                    <option value="area" {% if selected_category == 'area' %}selected{% endif %}>Area</option>
-                    <option value="volume" {% if selected_category == 'volume' %}selected{% endif %}>Volume</option>
-                    <option value="weight" {% if selected_category == 'weight' %}selected{% endif %}>Weight</option>
-                    <option value="temperature" {% if selected_category == 'temperature' %}selected{% endif %}>Temperature</option>
-                    <option value="speed" {% if selected_category == 'speed' %}selected{% endif %}>Speed</option>
-                    <option value="pressure" {% if selected_category == 'pressure' %}selected{% endif %}>Pressure</option>
-                    <option value="angle" {% if selected_category == 'angle' %}selected{% endif %}>Angle</option>
-                    <option value="energy" {% if selected_category == 'energy' %}selected{% endif %}>Energy</option>
-                    <option value="time" {% if selected_category == 'time' %}selected{% endif %}>Time</option>
-                </select>
-            </div>
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Convert Units</h3>
 
-            <div class="field">
-                <label>Value</label>
-                <input type="number" step="any" name="value" value="{{ value if value is defined else '' }}" required>
-            </div>
+            <form method="post" action="/units">
+                <div class="field">
+                    <label>Category</label>
+                    <select name="category" id="categorySelect">
+                        <option value="length" {% if selected_category == 'length' %}selected{% endif %}>Length</option>
+                        <option value="area" {% if selected_category == 'area' %}selected{% endif %}>Area</option>
+                        <option value="volume" {% if selected_category == 'volume' %}selected{% endif %}>Volume</option>
+                        <option value="weight" {% if selected_category == 'weight' %}selected{% endif %}>Weight</option>
+                        <option value="temperature" {% if selected_category == 'temperature' %}selected{% endif %}>Temperature</option>
+                        <option value="speed" {% if selected_category == 'speed' %}selected{% endif %}>Speed</option>
+                        <option value="pressure" {% if selected_category == 'pressure' %}selected{% endif %}>Pressure</option>
+                        <option value="angle" {% if selected_category == 'angle' %}selected{% endif %}>Angle</option>
+                        <option value="energy" {% if selected_category == 'energy' %}selected{% endif %}>Energy</option>
+                        <option value="time" {% if selected_category == 'time' %}selected{% endif %}>Time</option>
+                    </select>
+                </div>
 
-            <div class="field">
-                <label>From</label>
-                <select name="from_unit" id="fromUnit"></select>
-            </div>
+                <div class="field">
+                    <label>Value</label>
+                    <input type="number" step="any" name="value" value="{{ value if value is defined else '' }}" required>
+                </div>
 
-            <div class="field">
-                <label>To</label>
-                <select name="to_unit" id="toUnit"></select>
-            </div>
+                <div class="field">
+                    <label>From</label>
+                    <select name="from_unit" id="fromUnit"></select>
+                </div>
 
-            <button class="btn-green" type="submit">Convert</button>
-        </form>
+                <div class="field">
+                    <label>To</label>
+                    <select name="to_unit" id="toUnit"></select>
+                </div>
+
+                <button class="btn-green" type="submit">Convert</button>
+            </form>
+        </div>
     </div>
 
     <div class="card">
         <h2>Result</h2>
+
         {% if result %}
         <div class="result">{{ result }}</div>
+        {% else %}
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Ready to convert</strong>
+                <span class="muted">Choose a category, enter a value, then pick source and target units.</span>
+            </div>
+        </div>
         {% endif %}
 
         {% if error %}
@@ -80,24 +92,33 @@ function fillUnits(category, keepSelected = true) {
         const o1 = document.createElement("option");
         o1.value = unit;
         o1.textContent = unit;
-        if (keepSelected && unit === selectedFrom) o1.selected = true;
-        if (!keepSelected && idx === 0) o1.selected = true;
+        if (keepSelected && unit === selectedFrom) {
+            o1.selected = true;
+        }
+        if (!keepSelected && idx === 0) {
+            o1.selected = true;
+        }
         fromUnit.appendChild(o1);
 
         const o2 = document.createElement("option");
         o2.value = unit;
         o2.textContent = unit;
-        if (keepSelected && unit === selectedTo) o2.selected = true;
-        if (!keepSelected && idx === 1) o2.selected = true;
+        if (keepSelected && unit === selectedTo) {
+            o2.selected = true;
+        }
+        if (!keepSelected && idx === 1) {
+            o2.selected = true;
+        }
         toUnit.appendChild(o2);
     });
 
-    if (fromUnit.selectedIndex === -1 && fromUnit.options.length > 0) {
+    if (fromUnit.options.length > 0 && fromUnit.selectedIndex === -1) {
         fromUnit.selectedIndex = 0;
     }
-    if (toUnit.selectedIndex === -1 && toUnit.options.length > 1) {
+
+    if (toUnit.options.length > 1 && toUnit.selectedIndex === -1) {
         toUnit.selectedIndex = 1;
-    } else if (toUnit.selectedIndex === -1 && toUnit.options.length > 0) {
+    } else if (toUnit.options.length > 0 && toUnit.selectedIndex === -1) {
         toUnit.selectedIndex = 0;
     }
 }

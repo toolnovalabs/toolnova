@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Office Tools{% endblock %}
-
+{% block meta_description %}Free office tools for CSV, Excel, TXT, DOCX and PDF conversion.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#0ea5e9 0%,#0f172a 100%);">
     <h1>Office Tools</h1>
@@ -12,7 +12,9 @@
         <div class="form-block">
             <h3>CSV to Excel</h3>
             <form action="/csv-to-excel" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".csv,text/csv" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".csv,text/csv" required>
+                </div>
                 <button class="btn-blue" type="submit">Download XLSX</button>
             </form>
         </div>
@@ -20,7 +22,9 @@
         <div class="form-block">
             <h3>Excel to CSV</h3>
             <form action="/excel-to-csv" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".xlsx,.xls" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" required>
+                </div>
                 <button class="btn-blue" type="submit">Download CSV</button>
             </form>
         </div>
@@ -28,7 +32,9 @@
         <div class="form-block">
             <h3>TXT to DOCX</h3>
             <form action="/txt-to-docx" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".txt,text/plain" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".txt,text/plain" required>
+                </div>
                 <button class="btn-blue" type="submit">Download DOCX</button>
             </form>
         </div>
@@ -36,15 +42,19 @@
         <div class="form-block">
             <h3>DOCX to TXT</h3>
             <form action="/docx-to-txt" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".docx" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+                </div>
                 <button class="btn-blue" type="submit">Download TXT</button>
             </form>
         </div>
 
         <div class="form-block" style="margin-bottom:0;">
             <h3>DOCX to PDF</h3>
-            <form action="/docx-to-pdf" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".docx" required></div>
+            <form action="/word-to-pdf" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+                </div>
                 <button class="btn-blue" type="submit">Download PDF</button>
             </form>
         </div>
@@ -57,10 +67,11 @@
     <div class="card">
         <h2>Office conversions</h2>
         <div class="tool-list">
-            <div class="tool-item"><strong>CSV Viewer path</strong><span class="muted">First inspect, then convert.</span></div>
             <div class="tool-item"><strong>CSV to Excel</strong><span class="muted">Useful for spreadsheet users.</span></div>
+            <div class="tool-item"><strong>Excel to CSV</strong><span class="muted">Fast export for plain-text tabular data.</span></div>
+            <div class="tool-item"><strong>TXT to DOCX</strong><span class="muted">Turn plain text into an editable document.</span></div>
             <div class="tool-item"><strong>DOCX to TXT</strong><span class="muted">Quick plain text extraction.</span></div>
-            <div class="tool-item"><strong>DOCX to PDF</strong><span class="muted">Basic export flow.</span></div>
+            <div class="tool-item"><strong>DOCX to PDF</strong><span class="muted">Basic export flow for sharing documents.</span></div>
         </div>
     </div>
 </div>

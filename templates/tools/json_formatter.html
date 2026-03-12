@@ -1,34 +1,82 @@
 {% extends "base.html" %}
 
+{% block title %}JSON Formatter Online | ToolNova{% endblock %}
+{% block meta_description %}Format JSON online free and beautify minified JSON instantly with ToolNova.{% endblock %}
 {% block content %}
 
-<h1>JSON Formatter</h1>
+<section class="hero" style="background:linear-gradient(135deg,#ea580c 0%,#0f172a 100%);">
+    <h1>JSON Formatter</h1>
+    <p>Format and beautify JSON instantly for easier reading and debugging.</p>
+</section>
 
-<textarea id="jsoninput" rows="10"></textarea>
+<div class="grid-2">
 
-<button onclick="formatJSON()">Format JSON</button>
+    <div class="card">
 
-<textarea id="jsonoutput" rows="10"></textarea>
+        <div class="form-block">
+            <h3>Input JSON</h3>
+
+            <textarea id="jsoninput" rows="10" placeholder='{"name":"ToolNova"}'></textarea>
+
+            <button class="btn-orange" onclick="formatJSON()">Format JSON</button>
+
+        </div>
+
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Formatted Output</h3>
+
+            <textarea id="jsonoutput" rows="10" placeholder="Formatted JSON will appear here"></textarea>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Why use JSON formatter?</h2>
+
+        <div class="tool-list">
+
+            <div class="tool-item">
+                <strong>Readable JSON</strong>
+                <span class="muted">Beautify compressed JSON instantly.</span>
+            </div>
+
+            <div class="tool-item">
+                <strong>Developer tool</strong>
+                <span class="muted">Useful for APIs and debugging.</span>
+            </div>
+
+            <div class="tool-item">
+                <strong>Fast formatting</strong>
+                <span class="muted">Works instantly in your browser.</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <script>
 
 function formatJSON(){
 
-let input=document.getElementById("jsoninput").value
+    let input=document.getElementById("jsoninput").value
 
-try{
+    try{
 
-let obj=JSON.parse(input)
+        let obj=JSON.parse(input)
 
-document.getElementById("jsonoutput").value=JSON.stringify(obj,null,2)
+        document.getElementById("jsonoutput").value=JSON.stringify(obj,null,2)
 
-}
+    }
 
-catch{
+    catch{
 
-alert("Invalid JSON")
+        alert("Invalid JSON")
 
-}
+    }
 
 }
 

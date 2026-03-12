@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}PDF Tools{% endblock %}
-
+{% block meta_description %}Free PDF tools including merge, split, compress, Word to PDF and PDF to Word.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
     <h1>PDF Tools</h1>
@@ -12,7 +12,9 @@
         <div class="form-block">
             <h3>PDF Merge</h3>
             <form action="/merge" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="files" accept=".pdf,application/pdf" multiple required></div>
+                <div class="upload-box">
+                    <input type="file" name="files" accept=".pdf,application/pdf" multiple required>
+                </div>
                 <button class="btn-blue" type="submit">Merge PDFs</button>
             </form>
         </div>
@@ -20,7 +22,9 @@
         <div class="form-block">
             <h3>PDF Split</h3>
             <form action="/split" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <button class="btn-blue" type="submit">Split First Page</button>
             </form>
         </div>
@@ -28,15 +32,29 @@
         <div class="form-block">
             <h3>JPG to PDF</h3>
             <form action="/jpg-to-pdf" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="files" accept="image/*" multiple required></div>
+                <div class="upload-box">
+                    <input type="file" name="files" accept="image/*" multiple required>
+                </div>
                 <button class="btn-blue" type="submit">Create PDF</button>
+            </form>
+        </div>
+
+        <div class="form-block">
+            <h3>Word to PDF</h3>
+            <form action="/word-to-pdf" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".doc,.docx" required>
+                </div>
+                <button class="btn-blue" type="submit">Convert to PDF</button>
             </form>
         </div>
 
         <div class="form-block">
             <h3>PDF to Word</h3>
             <form action="/pdf-to-word" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <button class="btn-blue" type="submit">Download DOCX</button>
             </form>
         </div>
@@ -44,7 +62,9 @@
         <div class="form-block">
             <h3>PDF to Excel</h3>
             <form action="/pdf-to-excel" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <button class="btn-blue" type="submit">Download XLSX</button>
             </form>
         </div>
@@ -52,7 +72,9 @@
         <div class="form-block">
             <h3>PDF to JPG</h3>
             <form action="/pdf-to-jpg" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <button class="btn-blue" type="submit">Download JPG</button>
             </form>
         </div>
@@ -60,7 +82,9 @@
         <div class="form-block">
             <h3>PDF Compress</h3>
             <form action="/pdf-compress" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <button class="btn-blue" type="submit">Compress PDF</button>
             </form>
         </div>
@@ -68,7 +92,9 @@
         <div class="form-block">
             <h3>PDF Rotate</h3>
             <form action="/pdf-rotate" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <div class="field">
                     <label>Angle</label>
                     <select name="angle">
@@ -84,7 +110,9 @@
         <div class="form-block" style="margin-bottom:0;">
             <h3>Remove Pages</h3>
             <form action="/pdf-remove-pages" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".pdf,application/pdf" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
                 <div class="field">
                     <label>Pages to remove</label>
                     <input type="text" name="pages" placeholder="Example: 1,3,5-7" required>
@@ -103,6 +131,7 @@
         <div class="tool-list">
             <div class="tool-item"><strong>PDF Merge</strong><span class="muted">Join invoices, reports or scans into one file.</span></div>
             <div class="tool-item"><strong>PDF Split</strong><span class="muted">Extract a page quickly.</span></div>
+            <div class="tool-item"><strong>Word to PDF</strong><span class="muted">A very common need for sharing fixed-layout documents.</span></div>
             <div class="tool-item"><strong>PDF to Word</strong><span class="muted">Very common need for editing text.</span></div>
             <div class="tool-item"><strong>PDF to Excel</strong><span class="muted">Useful for table extraction.</span></div>
             <div class="tool-item"><strong>Compress</strong><span class="muted">Needed for email and upload size limits.</span></div>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}HEIC to JPG Converter Online | ToolNova{% endblock %}
-
+{% block meta_description %}Convert HEIC to JPG online free for iPhone photos with ToolNova.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#7c3aed 0%,#0f172a 100%);">
     <h1>HEIC to JPG</h1>
@@ -9,25 +9,57 @@
 </section>
 
 <div class="grid-2">
-    <div class="card">
-        <div class="form-block">
-            <h3>Convert HEIC to JPG</h3>
-            <form action="/convert-image" method="post" enctype="multipart/form-data">
-                <div class="upload-box">
-                    <input type="file" name="file" accept=".heic,.heif,image/*" required>
-                </div>
-                <input type="hidden" name="target_format" value="jpg">
-                <button class="btn-purple" type="submit">Convert to JPG</button>
-            </form>
-        </div>
-    </div>
 
     <div class="card">
-        <h2>Why HEIC to JPG?</h2>
-        <div class="tool-list">
-            <div class="tool-item"><strong>iPhone photos</strong><span class="muted">HEIC is common on Apple devices.</span></div>
-            <div class="tool-item"><strong>Better compatibility</strong><span class="muted">JPG works almost everywhere.</span></div>
+
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Convert HEIC to JPG</h3>
+
+            <form action="/heic-to-jpg" method="post" enctype="multipart/form-data">
+
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".heic,.heif,image/heic,image/heif" required>
+                </div>
+
+                <button class="btn-purple" type="submit">
+                    Convert to JPG
+                </button>
+
+            </form>
+
         </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
     </div>
+
+
+    <div class="card">
+
+        <h2>Why HEIC to JPG?</h2>
+
+        <div class="tool-list">
+
+            <div class="tool-item">
+                <strong>iPhone photos</strong>
+                <span class="muted">HEIC is common on Apple devices.</span>
+            </div>
+
+            <div class="tool-item">
+                <strong>Better compatibility</strong>
+                <span class="muted">JPG works almost everywhere.</span>
+            </div>
+
+            <div class="tool-item">
+                <strong>Fast conversion</strong>
+                <span class="muted">Upload, convert and download instantly.</span>
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 {% endblock %}

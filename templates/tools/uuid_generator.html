@@ -1,21 +1,58 @@
 {% extends "base.html" %}
 
 {% block title %}UUID Generator Online | ToolNova{% endblock %}
-
+{% block meta_description %}Generate UUID online free for development, APIs and databases with ToolNova.{% endblock %}
 {% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#7c3aed 0%,#0f172a 100%);">
+    <h1>UUID Generator</h1>
+    <p>Generate secure random UUID (version 4) instantly for development, databases and APIs.</p>
+</section>
 
-<h1>UUID Generator</h1>
+<div class="grid-2">
 
-<p>Generate random UUID instantly.</p>
+<div class="card">
+<div class="form-block" style="margin-bottom:0;">
 
-<button onclick="generateUUID()">Generate UUID</button>
+<h3>Generate UUID</h3>
 
-<p id="uuid"></p>
+<button class="btn-purple" type="button" onclick="generateUUID()">Generate UUID</button>
+
+<div id="uuid" class="result" style="margin-top:16px;"></div>
+
+</div>
+</div>
+
+<div class="card">
+
+<h2>Why use UUID?</h2>
+
+<div class="tool-list">
+
+<div class="tool-item">
+<strong>Unique identifiers</strong>
+<span class="muted">Perfect for databases and distributed systems.</span>
+</div>
+
+<div class="tool-item">
+<strong>Developer friendly</strong>
+<span class="muted">Commonly used in APIs, tokens and software development.</span>
+</div>
+
+<div class="tool-item">
+<strong>Collision resistant</strong>
+<span class="muted">UUID v4 generates highly unique random values.</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 <script>
-function generateUUID() {
-  const uuid = crypto.randomUUID();
-  document.getElementById("uuid").innerText = uuid;
+function generateUUID(){
+    const uuid = crypto.randomUUID()
+    document.getElementById("uuid").innerText = uuid
 }
 </script>
 

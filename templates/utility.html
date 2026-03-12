@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Utility Tools{% endblock %}
-
+{% block meta_description %}Useful free tools like JSON formatter, QR generator, Base64, case converter and more.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#ea580c 0%,#0f172a 100%);">
     <h1>Utility Tools</h1>
@@ -12,7 +12,9 @@
         <div class="form-block">
             <h3>Word Counter</h3>
             <form action="/word-counter" method="post">
-                <div class="field"><textarea name="text" placeholder="Paste your text here"></textarea></div>
+                <div class="field">
+                    <textarea name="text" placeholder="Paste your text here" required></textarea>
+                </div>
                 <button class="btn-orange" type="submit">Count</button>
             </form>
         </div>
@@ -20,7 +22,9 @@
         <div class="form-block">
             <h3>JSON Formatter</h3>
             <form action="/json-formatter" method="post">
-                <div class="field"><textarea name="text" placeholder='{"name":"HB51"}'></textarea></div>
+                <div class="field">
+                    <textarea name="text" placeholder='{"name":"HB51"}' required></textarea>
+                </div>
                 <button class="btn-orange" type="submit">Format JSON</button>
             </form>
         </div>
@@ -28,7 +32,9 @@
         <div class="form-block">
             <h3>Base64 Encode</h3>
             <form action="/base64-encode" method="post">
-                <div class="field"><textarea name="text" placeholder="Enter text"></textarea></div>
+                <div class="field">
+                    <textarea name="text" placeholder="Enter text" required></textarea>
+                </div>
                 <button class="btn-orange" type="submit">Encode</button>
             </form>
         </div>
@@ -36,7 +42,9 @@
         <div class="form-block">
             <h3>Base64 Decode</h3>
             <form action="/base64-decode" method="post">
-                <div class="field"><textarea name="text" placeholder="Enter Base64 text"></textarea></div>
+                <div class="field">
+                    <textarea name="text" placeholder="Enter Base64 text" required></textarea>
+                </div>
                 <button class="btn-orange" type="submit">Decode</button>
             </form>
         </div>
@@ -44,7 +52,9 @@
         <div class="form-block">
             <h3>QR Generator</h3>
             <form action="/qr-generate" method="post">
-                <div class="field"><input type="text" name="text" placeholder="https://example.com"></div>
+                <div class="field">
+                    <input type="text" name="text" placeholder="https://example.com" required>
+                </div>
                 <button class="btn-orange" type="submit">Generate QR</button>
             </form>
         </div>
@@ -52,7 +62,9 @@
         <div class="form-block">
             <h3>Markdown to HTML</h3>
             <form action="/markdown-to-html" method="post">
-                <div class="field"><textarea name="text" placeholder="# Title&#10;&#10;Some **markdown**"></textarea></div>
+                <div class="field">
+                    <textarea name="text" placeholder="# Title&#10;&#10;Some **markdown**" required></textarea>
+                </div>
                 <button class="btn-orange" type="submit">Convert</button>
             </form>
         </div>
@@ -69,7 +81,7 @@
             <form action="/password-generate" method="post">
                 <div class="field">
                     <label>Length</label>
-                    <input type="number" name="length" min="6" max="128" value="16">
+                    <input type="number" name="length" min="6" max="128" value="16" required>
                 </div>
                 <div class="field">
                     <label>Use Symbols</label>
@@ -85,7 +97,9 @@
         <div class="form-block">
             <h3>YouTube Thumbnail URL</h3>
             <form action="/youtube-thumbnail" method="post">
-                <div class="field"><input type="text" name="url" placeholder="https://www.youtube.com/watch?v=..."></div>
+                <div class="field">
+                    <input type="text" name="url" placeholder="https://www.youtube.com/watch?v=..." required>
+                </div>
                 <button class="btn-orange" type="submit">Get Thumbnail</button>
             </form>
         </div>
@@ -93,7 +107,9 @@
         <div class="form-block">
             <h3>Case Converter</h3>
             <form action="/case-converter" method="post">
-                <div class="field"><textarea name="text" placeholder="Enter text"></textarea></div>
+                <div class="field">
+                    <textarea name="text" placeholder="Enter text" required></textarea>
+                </div>
                 <div class="field">
                     <label>Mode</label>
                     <select name="mode">
@@ -122,7 +138,9 @@
         <div class="form-block">
             <h3>Favicon Generator</h3>
             <form action="/favicon-generator" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept="image/*" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept="image/*" required>
+                </div>
                 <button class="btn-orange" type="submit">Generate Favicon</button>
             </form>
         </div>
@@ -130,7 +148,9 @@
         <div class="form-block">
             <h3>CSV Viewer</h3>
             <form action="/csv-viewer" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".csv,text/csv" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".csv,text/csv" required>
+                </div>
                 <button class="btn-orange" type="submit">View CSV</button>
             </form>
         </div>
@@ -138,7 +158,9 @@
         <div class="form-block" style="margin-bottom:0;">
             <h3>KML Viewer</h3>
             <form action="/kml-viewer" method="post" enctype="multipart/form-data">
-                <div class="upload-box"><input type="file" name="file" accept=".kml,.xml" required></div>
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".kml,.xml" required>
+                </div>
                 <button class="btn-orange" type="submit">View KML</button>
             </form>
         </div>
@@ -146,9 +168,18 @@
 
     <div class="card">
         <h2>Result</h2>
+
         {% if result %}
         <div class="result">{{ result | safe }}</div>
+        {% else %}
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Ready to use</strong>
+                <span class="muted">Run any utility tool on the left and the output will appear here.</span>
+            </div>
+        </div>
         {% endif %}
+
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}

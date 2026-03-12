@@ -1,23 +1,65 @@
-@app.get("/merge-pdf", response_class=HTMLResponse)
-async def merge_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
+{% extends "base.html" %}
 
+{% block title %}Merge PDF Online Free | ToolNova{% endblock %}
+{% block meta_description %}Merge multiple PDF files online for free. Fast and simple PDF combiner tool by ToolNova.{% endblock %}
 
-@app.get("/split-pdf", response_class=HTMLResponse)
-async def split_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/split_pdf.html", {"request": request})
+{% block content %}
 
+<section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
+    <h1>Merge PDF Online</h1>
+    <p>Combine multiple PDF files into one single document quickly and easily.</p>
+</section>
 
-@app.get("/compress-pdf", response_class=HTMLResponse)
-async def compress_pdf_page(request: Request):
-    return templates.TemplateResponse("tools/compress_pdf.html", {"request": request})
+<div class="grid-2">
 
+<div class="card">
+<div class="form-block" style="margin-bottom:0;">
 
-@app.get("/heic-to-jpg", response_class=HTMLResponse)
-async def heic_to_jpg_page(request: Request):
-    return templates.TemplateResponse("tools/heic_to_jpg.html", {"request": request})
+<h3>Merge PDF Files</h3>
 
+<form action="/merge-pdf" method="post" enctype="multipart/form-data">
 
-@app.get("/image-compressor", response_class=HTMLResponse)
-async def image_compressor_page(request: Request):
-    return templates.TemplateResponse("tools/image_compressor.html", {"request": request})
+<div class="upload-box">
+<input type="file" name="files" accept=".pdf,application/pdf" multiple required>
+</div>
+
+<button class="btn-blue" type="submit">Merge PDFs</button>
+
+</form>
+
+</div>
+
+{% if error %}
+<div class="error">{{ error }}</div>
+{% endif %}
+
+</div>
+
+<div class="card">
+
+<h2>Why merge PDF?</h2>
+
+<div class="tool-list">
+
+<div class="tool-item">
+<strong>Combine documents</strong>
+<span class="muted">Merge multiple PDF files into one single file.</span>
+</div>
+
+<div class="tool-item">
+<strong>Organize files</strong>
+<span class="muted">Perfect for reports, invoices and document bundles.</span>
+</div>
+
+<div class="tool-item">
+<strong>Quick workflow</strong>
+<span class="muted">Upload, merge and download instantly.</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

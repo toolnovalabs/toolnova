@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Compress PDF Online Free | ToolNova{% endblock %}
-
+{% block meta_description %}Compress PDF online free to reduce file size for email, uploads and sharing.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#0ea5e9 0%,#0f172a 100%);">
     <h1>Compress PDF Online</h1>
@@ -10,22 +10,36 @@
 
 <div class="grid-2">
     <div class="card">
-        <div class="form-block">
+        <div class="form-block" style="margin-bottom:0;">
             <h3>Compress PDF</h3>
-            <form action="/pdf-compress" method="post" enctype="multipart/form-data">
+            <form action="/compress-pdf" method="post" enctype="multipart/form-data">
                 <div class="upload-box">
                     <input type="file" name="file" accept=".pdf,application/pdf" required>
                 </div>
                 <button class="btn-blue" type="submit">Compress PDF</button>
             </form>
         </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
     </div>
 
     <div class="card">
         <h2>Why use PDF compression?</h2>
         <div class="tool-list">
-            <div class="tool-item"><strong>Smaller files</strong><span class="muted">Useful for email attachments and upload limits.</span></div>
-            <div class="tool-item"><strong>Fast sharing</strong><span class="muted">Lower size helps transfer speed.</span></div>
+            <div class="tool-item">
+                <strong>Smaller files</strong>
+                <span class="muted">Useful for email attachments and upload limits.</span>
+            </div>
+            <div class="tool-item">
+                <strong>Fast sharing</strong>
+                <span class="muted">Lower size helps transfer speed.</span>
+            </div>
+            <div class="tool-item">
+                <strong>Simple workflow</strong>
+                <span class="muted">Upload, compress and download in one step.</span>
+            </div>
         </div>
     </div>
 </div>

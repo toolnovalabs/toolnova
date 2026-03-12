@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}ToolNova{% endblock %}
+{% block meta_description %}ToolNova offers free online PDF, image, office, converter and utility tools in one place.{% endblock %}
 
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#1d4ed8 0%,#0f172a 100%);">
@@ -8,34 +9,55 @@
 </section>
 
 <div class="grid-2">
+
     <div class="category-card">
         <h2>PDF Tools</h2>
-        <p class="muted">Merge, split, compress, rotate, remove pages, PDF to Word, PDF to Excel, PDF to JPG, JPG to PDF.</p>
+        <p class="muted">
+            Merge, split, compress, rotate, remove pages,
+            Word to PDF, PDF to Word, PDF to Excel, PDF to JPG, JPG to PDF.
+        </p>
         <a href="/pdf">Open PDF Tools</a>
     </div>
 
     <div class="category-card">
         <h2>Image Tools</h2>
-        <p class="muted">Image compressor, HEIC to JPG, HEIC to PNG, background remover, resize and image to SVG.</p>
+        <p class="muted">
+            Image compressor, HEIC to JPG, HEIC to PNG,
+            background remover, resize and image to SVG.
+        </p>
         <a href="/image">Open Image Tools</a>
     </div>
 
     <div class="category-card">
         <h2>Office Tools</h2>
-        <p class="muted">CSV to Excel, Excel to CSV, TXT to DOCX, DOCX to TXT and DOCX to PDF.</p>
+        <p class="muted">
+            CSV to Excel, Excel to CSV,
+            TXT to DOCX, DOCX to TXT and Word to PDF.
+        </p>
         <a href="/office">Open Office Tools</a>
     </div>
 
     <div class="category-card">
         <h2>Unit Converter</h2>
-        <p class="muted">Length, area, volume, weight, temperature, speed, pressure, angle, energy and time.</p>
+        <p class="muted">
+            Length, area, volume, weight,
+            temperature, speed, pressure,
+            angle, energy and time.
+        </p>
         <a href="/units">Open Unit Converter</a>
     </div>
 
     <div class="category-card">
         <h2>Utility Tools</h2>
-        <p class="muted">Password generator, UUID generator, JSON formatter, Base64, QR, word counter, age calculator, case converter, favicon generator, CSV viewer and KML viewer.</p>
+        <p class="muted">
+            Password generator, UUID generator,
+            JSON formatter, Base64, QR generator,
+            word counter, age calculator,
+            case converter, favicon generator,
+            CSV viewer and KML viewer.
+        </p>
         <a href="/utility">Open Utility Tools</a>
     </div>
+
 </div>
 {% endblock %}

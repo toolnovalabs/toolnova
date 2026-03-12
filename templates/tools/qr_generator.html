@@ -1,35 +1,80 @@
 {% extends "base.html" %}
 
+{% block title %}QR Code Generator Online | ToolNova{% endblock %}
+{% block meta_description %}Generate QR codes online free for URLs, text and contact info with ToolNova.{% endblock %}
 {% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#ea580c 0%,#0f172a 100%);">
+    <h1>QR Code Generator</h1>
+    <p>Create QR codes instantly for links, text, contact info or anything you want.</p>
+</section>
 
-<h1>QR Code Generator</h1>
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Generate QR Code</h3>
 
-<input type="text" id="qrtext" placeholder="Enter text or URL">
+            <div class="field">
+                <label>Text or URL</label>
+                <input type="text" id="qrtext" placeholder="https://example.com">
+            </div>
 
-<button onclick="generateQR()">Generate</button>
+            <button class="btn-orange" type="button" onclick="generateQR()">Generate QR</button>
 
-<div id="qr"></div>
+            <div id="qr" style="margin-top:20px;text-align:center;"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Why use QR codes?</h2>
+
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Instant sharing</strong>
+                <span class="muted">Share links, WiFi passwords or contact info quickly.</span>
+            </div>
+
+            <div class="tool-item">
+                <strong>Mobile friendly</strong>
+                <span class="muted">Most smartphones scan QR codes automatically.</span>
+            </div>
+
+            <div class="tool-item">
+                <strong>Marketing ready</strong>
+                <span class="muted">Perfect for menus, websites and business cards.</span>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <script>
+function generateQR() {
+    const text = document.getElementById("qrtext").value.trim();
+    const qr = document.getElementById("qr");
 
-function generateQR(){
+    qr.innerHTML = "";
 
-let text=document.getElementById("qrtext").value
+    if (!text) {
+        qr.innerHTML = '<div class="error">Please enter text or URL</div>';
+        return;
+    }
 
-let qr=document.getElementById("qr")
-
-qr.innerHTML=""
-
-QRCode.toCanvas(text,{width:200},function(err,canvas){
-
-qr.appendChild(canvas)
-
-})
-
+    QRCode.toCanvas(text, { width: 220 }, function(err, canvas) {
+        if (err) {
+            qr.innerHTML = '<div class="error">QR generation failed</div>';
+            return;
+        }
+        qr.appendChild(canvas);
+    });
 }
 
+document.getElementById("qrtext").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        generateQR();
+    }
+});
 </script>
 
 {% endblock %}

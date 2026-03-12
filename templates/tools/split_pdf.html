@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Split PDF Online Free | ToolNova{% endblock %}
-
+{% block meta_description %}Split PDF online free and extract pages quickly with ToolNova.{% endblock %}
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#1d4ed8 0%,#0f172a 100%);">
     <h1>Split PDF Online</h1>
@@ -10,22 +10,37 @@
 
 <div class="grid-2">
     <div class="card">
-        <div class="form-block">
+        <div class="form-block" style="margin-bottom:0;">
             <h3>Split PDF</h3>
-            <form action="/split" method="post" enctype="multipart/form-data">
+            <form action="/split-pdf" method="post" enctype="multipart/form-data">
                 <div class="upload-box">
                     <input type="file" name="file" accept=".pdf,application/pdf" required>
                 </div>
                 <button class="btn-blue" type="submit">Split First Page</button>
             </form>
         </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
     </div>
 
     <div class="card">
         <h2>About this tool</h2>
-        <p class="muted">
-            This tool creates a new PDF containing the first page of your uploaded document.
-        </p>
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Quick extraction</strong>
+                <span class="muted">Creates a new PDF with the first page only.</span>
+            </div>
+            <div class="tool-item">
+                <strong>Simple workflow</strong>
+                <span class="muted">Upload, split and download in one step.</span>
+            </div>
+            <div class="tool-item">
+                <strong>Useful for previews</strong>
+                <span class="muted">Ideal for cover pages, samples and quick sharing.</span>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
