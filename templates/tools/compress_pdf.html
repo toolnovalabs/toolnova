@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Compress PDF Online Free | ToolNova{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#0ea5e9 0%,#0f172a 100%);">
+    <h1>Compress PDF Online</h1>
+    <p>Reduce PDF file size quickly for email, uploads and sharing.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block">
+            <h3>Compress PDF</h3>
+            <form action="/pdf-compress" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
+                <button class="btn-blue" type="submit">Compress PDF</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Why use PDF compression?</h2>
+        <div class="tool-list">
+            <div class="tool-item"><strong>Smaller files</strong><span class="muted">Useful for email attachments and upload limits.</span></div>
+            <div class="tool-item"><strong>Fast sharing</strong><span class="muted">Lower size helps transfer speed.</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

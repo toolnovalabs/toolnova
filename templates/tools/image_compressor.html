@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Image Compressor Online Free | ToolNova{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#059669 0%,#0f172a 100%);">
+    <h1>Image Compressor</h1>
+    <p>Compress JPG images online to reduce file size while keeping good quality.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block">
+            <h3>Compress Image</h3>
+            <form action="/compress-image" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept="image/*" required>
+                </div>
+                <div class="field">
+                    <label>Quality (10 - 95)</label>
+                    <input type="number" name="quality" min="10" max="95" value="70" required>
+                </div>
+                <button class="btn-green" type="submit">Compress Image</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Why compress images?</h2>
+        <div class="tool-list">
+            <div class="tool-item"><strong>Faster uploads</strong><span class="muted">Smaller files upload quicker.</span></div>
+            <div class="tool-item"><strong>Save storage</strong><span class="muted">Useful for websites and sharing.</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Split PDF Online Free | ToolNova{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#1d4ed8 0%,#0f172a 100%);">
+    <h1>Split PDF Online</h1>
+    <p>Extract the first page from a PDF file instantly and download it as a new document.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block">
+            <h3>Split PDF</h3>
+            <form action="/split" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".pdf,application/pdf" required>
+                </div>
+                <button class="btn-blue" type="submit">Split First Page</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>About this tool</h2>
+        <p class="muted">
+            This tool creates a new PDF containing the first page of your uploaded document.
+        </p>
+    </div>
+</div>
+{% endblock %}

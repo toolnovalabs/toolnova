@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}HEIC to JPG Converter Online | ToolNova{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#7c3aed 0%,#0f172a 100%);">
+    <h1>HEIC to JPG</h1>
+    <p>Convert HEIC and HEIF images to JPG online. Great for iPhone photos.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block">
+            <h3>Convert HEIC to JPG</h3>
+            <form action="/convert-image" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <input type="file" name="file" accept=".heic,.heif,image/*" required>
+                </div>
+                <input type="hidden" name="target_format" value="jpg">
+                <button class="btn-purple" type="submit">Convert to JPG</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Why HEIC to JPG?</h2>
+        <div class="tool-list">
+            <div class="tool-item"><strong>iPhone photos</strong><span class="muted">HEIC is common on Apple devices.</span></div>
+            <div class="tool-item"><strong>Better compatibility</strong><span class="muted">JPG works almost everywhere.</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

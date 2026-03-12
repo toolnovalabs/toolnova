@@ -1077,3 +1077,26 @@ async def uuid_generator(request: Request):
         "tools/uuid_generator.html",
         {"request": request}
     )
+@app.get("/merge-pdf", response_class=HTMLResponse)
+async def merge_pdf_page(request: Request):
+    return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
+
+
+@app.get("/split-pdf", response_class=HTMLResponse)
+async def split_pdf_page(request: Request):
+    return templates.TemplateResponse("tools/split_pdf.html", {"request": request})
+
+
+@app.get("/compress-pdf", response_class=HTMLResponse)
+async def compress_pdf_page(request: Request):
+    return templates.TemplateResponse("tools/compress_pdf.html", {"request": request})
+
+
+@app.get("/heic-to-jpg", response_class=HTMLResponse)
+async def heic_to_jpg_page(request: Request):
+    return templates.TemplateResponse("tools/heic_to_jpg.html", {"request": request})
+
+
+@app.get("/image-compressor", response_class=HTMLResponse)
+async def image_compressor_page(request: Request):
+    return templates.TemplateResponse("tools/image_compressor.html", {"request": request})
