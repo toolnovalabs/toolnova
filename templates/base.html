@@ -1,65 +1,358 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-{% block title %}Merge PDF Online Free | ToolNova{% endblock %}
-{% block meta_description %}Merge multiple PDF files online for free. Fast and simple PDF combiner tool by ToolNova.{% endblock %}
+    <title>{% block title %}ToolNova{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}ToolNova offers free online PDF, image, office, converter and utility tools including PDF merge, PDF compression, HEIC to JPG, QR generator and more.{% endblock %}">
+    <meta name="keywords" content="pdf tools,image tools,office tools,unit converter,qr code generator,json formatter,password generator,heic to jpg,merge pdf,compress pdf">
+    <meta name="robots" content="index,follow">
+    <meta name="author" content="ToolNova">
+    <link rel="canonical" href="{{ request.url if request is defined else 'https://toolnova.onrender.com/' }}">
 
-{% block content %}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}{{ self.title() | striptags }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Free online tools for PDF, image, office, converter and utility tasks.{% endblock %}">
+    <meta property="og:url" content="{{ request.url if request is defined else 'https://toolnova.onrender.com/' }}">
+    <meta property="og:site_name" content="ToolNova">
 
-<section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
-    <h1>Merge PDF Online</h1>
-    <p>Combine multiple PDF files into one single document quickly and easily.</p>
-</section>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() | striptags }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Free online tools for PDF, image, office, converter and utility tasks.{% endblock %}">
 
-<div class="grid-2">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-90BTK2MKT1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+          dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-90BTK2MKT1');
+    </script>
 
-<div class="card">
-<div class="form-block" style="margin-bottom:0;">
+    <style>
+        *{box-sizing:border-box}
 
-<h3>Merge PDF Files</h3>
+        :root{
+            --bg:#f8fafc;
+            --card:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --line:#e2e8f0;
+            --nav:#0f172a;
+            --primary:#2563eb;
+            --green:#059669;
+            --orange:#ea580c;
+            --purple:#7c3aed;
+            --shadow:0 12px 30px rgba(15,23,42,.08);
+            --radius:18px;
+            --max:1200px;
+        }
 
-<form action="/merge-pdf" method="post" enctype="multipart/form-data">
+        body{
+            margin:0;
+            font-family:Arial, Helvetica, sans-serif;
+            background:var(--bg);
+            color:var(--text);
+        }
 
-<div class="upload-box">
-<input type="file" name="files" accept=".pdf,application/pdf" multiple required>
-</div>
+        .nav{
+            background:var(--nav);
+            color:#fff;
+            position:sticky;
+            top:0;
+            z-index:20;
+        }
 
-<button class="btn-blue" type="submit">Merge PDFs</button>
+        .nav-inner{
+            max-width:var(--max);
+            margin:0 auto;
+            padding:18px 22px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:20px;
+        }
 
-</form>
+        .brand{
+            color:#fff;
+            text-decoration:none;
+            font-size:28px;
+            font-weight:800;
+            white-space:nowrap;
+        }
 
-</div>
+        .nav-links{
+            display:flex;
+            gap:18px;
+            flex-wrap:wrap;
+        }
 
-{% if error %}
-<div class="error">{{ error }}</div>
-{% endif %}
+        .nav-links a{
+            color:#fff;
+            text-decoration:none;
+            font-size:15px;
+            opacity:.92;
+        }
 
-</div>
+        .page{
+            max-width:var(--max);
+            margin:0 auto;
+            padding:28px 22px 56px;
+        }
 
-<div class="card">
+        .hero{
+            color:#fff;
+            border-radius:24px;
+            padding:28px;
+            margin-bottom:24px;
+            box-shadow:var(--shadow);
+        }
 
-<h2>Why merge PDF?</h2>
+        .hero h1{
+            margin:0 0 8px;
+            font-size:42px;
+            line-height:1.1;
+        }
 
-<div class="tool-list">
+        .hero p{
+            margin:0;
+            color:rgba(255,255,255,.9);
+            font-size:16px;
+            line-height:1.7;
+            max-width:760px;
+        }
 
-<div class="tool-item">
-<strong>Combine documents</strong>
-<span class="muted">Merge multiple PDF files into one single file.</span>
-</div>
+        .grid-2{
+            display:grid;
+            grid-template-columns:1.2fr .8fr;
+            gap:22px;
+        }
 
-<div class="tool-item">
-<strong>Organize files</strong>
-<span class="muted">Perfect for reports, invoices and document bundles.</span>
-</div>
+        .card,
+        .category-card{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:var(--radius);
+            padding:22px;
+            box-shadow:var(--shadow);
+        }
 
-<div class="tool-item">
-<strong>Quick workflow</strong>
-<span class="muted">Upload, merge and download instantly.</span>
-</div>
+        .card h2,
+        .card h3{
+            margin:0 0 10px;
+        }
 
-</div>
+        .muted{
+            color:var(--muted);
+        }
 
-</div>
+        .tool-list{
+            display:grid;
+            gap:12px;
+        }
 
-</div>
+        .tool-item{
+            border:1px solid var(--line);
+            background:#f8fafc;
+            border-radius:14px;
+            padding:14px 16px;
+        }
 
-{% endblock %}
+        .tool-item strong{
+            display:block;
+            margin-bottom:4px;
+        }
+
+        .form-block{
+            padding:18px;
+            border:1px solid var(--line);
+            border-radius:16px;
+            background:#fbfdff;
+            margin-bottom:16px;
+        }
+
+        .form-block h3{
+            margin:0 0 8px;
+            font-size:22px;
+        }
+
+        .field{
+            margin-bottom:12px;
+        }
+
+        label{
+            display:block;
+            font-size:14px;
+            margin-bottom:6px;
+            color:var(--muted);
+        }
+
+        input,
+        select,
+        textarea,
+        button{
+            width:100%;
+            font-size:15px;
+            border-radius:12px;
+        }
+
+        input,
+        select,
+        textarea{
+            border:1px solid #cbd5e1;
+            padding:12px 14px;
+            background:#fff;
+            color:var(--text);
+        }
+
+        textarea{
+            min-height:120px;
+            resize:vertical;
+        }
+
+        button{
+            border:none;
+            padding:14px 16px;
+            font-weight:700;
+            cursor:pointer;
+            color:#ffffff !important;
+            background:#2563eb;
+            text-align:center;
+            line-height:1.2;
+            appearance:none;
+            -webkit-appearance:none;
+        }
+
+        button:hover{
+            filter:brightness(.96);
+        }
+
+        button:focus,
+        button:active,
+        button:visited{
+            color:#ffffff !important;
+        }
+
+        .btn-blue{
+            background:var(--primary) !important;
+            color:#ffffff !important;
+        }
+
+        .btn-green{
+            background:var(--green) !important;
+            color:#ffffff !important;
+        }
+
+        .btn-purple{
+            background:var(--purple) !important;
+            color:#ffffff !important;
+        }
+
+        .btn-orange{
+            background:var(--orange) !important;
+            color:#ffffff !important;
+        }
+
+        .form-block button,
+        .form-block .btn-blue,
+        .form-block .btn-green,
+        .form-block .btn-purple,
+        .form-block .btn-orange{
+            color:#ffffff !important;
+        }
+
+        .result{
+            background:#ecfdf5;
+            border:1px solid #a7f3d0;
+            color:#065f46;
+            padding:16px;
+            border-radius:14px;
+            font-weight:700;
+            white-space:pre-wrap;
+            overflow:auto;
+        }
+
+        .error{
+            background:#fef2f2;
+            border:1px solid #fecaca;
+            color:#991b1b;
+            padding:14px;
+            border-radius:14px;
+            font-weight:700;
+            margin-top:14px;
+        }
+
+        .success{
+            background:#ecfdf5;
+            border:1px solid #a7f3d0;
+            color:#065f46;
+            padding:14px;
+            border-radius:14px;
+            font-weight:700;
+            margin-top:14px;
+        }
+
+        .upload-box{
+            border:2px dashed #bfdbfe;
+            background:#eff6ff;
+            padding:16px;
+            border-radius:14px;
+            margin-bottom:12px;
+        }
+
+        .category-card a{
+            color:var(--primary);
+            text-decoration:none;
+            font-weight:700;
+        }
+
+        .table-view{
+            width:100%;
+            border-collapse:collapse;
+        }
+
+        .table-view th,
+        .table-view td{
+            padding:8px 10px;
+            border:1px solid #ddd;
+            text-align:left;
+            font-size:14px;
+        }
+
+        @media (max-width:980px){
+            .grid-2{
+                grid-template-columns:1fr;
+            }
+
+            .hero h1{
+                font-size:34px;
+            }
+
+            .nav-links{
+                display:none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <div class="nav-inner">
+            <a href="/" class="brand">ToolNova</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/pdf">PDF Tools</a>
+                <a href="/image">Image Tools</a>
+                <a href="/office">Office Tools</a>
+                <a href="/units">Unit Converter</a>
+                <a href="/utility">Utility Tools</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
