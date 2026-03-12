@@ -3,27 +3,35 @@
 
 <url>
 <loc>https://toolnova.onrender.com/</loc>
+<priority>1.0</priority>
 </url>
 
 <url>
 <loc>https://toolnova.onrender.com/pdf</loc>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://toolnova.onrender.com/image</loc>
+<priority>0.9</priority>
 </url>
 
 <url>
 <loc>https://toolnova.onrender.com/office</loc>
+<priority>0.8</priority>
 </url>
 
 <url>
 <loc>https://toolnova.onrender.com/units</loc>
+<priority>0.8</priority>
 </url>
 
 <url>
 <loc>https://toolnova.onrender.com/utility</loc>
+<priority>0.8</priority>
 </url>
+
+<!-- PDF tools -->
 
 <url>
 <loc>https://toolnova.onrender.com/merge-pdf</loc>
@@ -38,19 +46,41 @@
 </url>
 
 <url>
-<loc>https://toolnova.onrender.com/uuid-generator</loc>
+<loc>https://toolnova.onrender.com/pdf-to-word</loc>
 </url>
 
 <url>
-<loc>https://toolnova.onrender.com/merge-pdf</loc>
+<loc>https://toolnova.onrender.com/word-to-pdf</loc>
 </url>
 
 <url>
-<loc>https://toolnova.onrender.com/split-pdf</loc>
+<loc>https://toolnova.onrender.com/pdf-to-jpg</loc>
 </url>
 
 <url>
-<loc>https://toolnova.onrender.com/compress-pdf</loc>
+<loc>https://toolnova.onrender.com/jpg-to-pdf</loc>
+</url>
+
+<!-- Image tools -->
+
+<url>
+<loc>https://toolnova.onrender.com/image-compressor</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/resize-image</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/crop-image</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/jpg-to-png</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/png-to-jpg</loc>
 </url>
 
 <url>
@@ -58,7 +88,39 @@
 </url>
 
 <url>
-<loc>https://toolnova.onrender.com/image-compressor</loc>
+<loc>https://toolnova.onrender.com/remove-background</loc>
+</url>
+
+<!-- Utility tools -->
+
+<url>
+<loc>https://toolnova.onrender.com/qr-code-generator</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/password-generator</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/json-formatter</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/base64-encoder</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/uuid-generator</loc>
+</url>
+
+<!-- Text tools -->
+
+<url>
+<loc>https://toolnova.onrender.com/word-counter</loc>
+</url>
+
+<url>
+<loc>https://toolnova.onrender.com/case-converter</loc>
 </url>
 
 </urlset>
