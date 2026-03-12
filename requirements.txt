@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+pypdf
+pillow
+pillow-heif
+python-docx
+openpyxl
+pandas
+pdfplumber
+pymupdf
+qrcode
+reportlab
+markdown

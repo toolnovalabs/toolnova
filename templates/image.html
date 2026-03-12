@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Image Tools{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#7c3aed 0%,#0f172a 100%);">
+    <h1>Image Tools</h1>
+    <p>High-demand image tools: compressor, HEIC converter, background remover and more.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block">
+            <h3>Image Format Converter</h3>
+            <form action="/convert-image" method="post" enctype="multipart/form-data">
+                <div class="upload-box"><input type="file" name="file" accept="image/*,.heic,.heif,.webp,.png,.jpg,.jpeg" required></div>
+                <div class="field">
+                    <label>Target format</label>
+                    <select name="target_format">
+                        <option value="jpg">JPG</option>
+                        <option value="png">PNG</option>
+                        <option value="webp">WEBP</option>
+                    </select>
+                </div>
+                <button class="btn-purple" type="submit">Convert Image</button>
+            </form>
+        </div>
+
+        <div class="form-block">
+            <h3>Image Resizer</h3>
+            <form action="/resize-image" method="post" enctype="multipart/form-data">
+                <div class="upload-box"><input type="file" name="file" accept="image/*" required></div>
+                <div class="field"><label>Width</label><input type="number" name="width" required></div>
+                <div class="field"><label>Height</label><input type="number" name="height" required></div>
+                <button class="btn-purple" type="submit">Resize</button>
+            </form>
+        </div>
+
+        <div class="form-block">
+            <h3>Image Compressor</h3>
+            <form action="/compress-image" method="post" enctype="multipart/form-data">
+                <div class="upload-box"><input type="file" name="file" accept="image/*" required></div>
+                <div class="field"><label>Quality (10 - 95)</label><input type="number" name="quality" min="10" max="95" value="70" required></div>
+                <button class="btn-purple" type="submit">Compress</button>
+            </form>
+        </div>
+
+        <div class="form-block">
+            <h3>Background Remover</h3>
+            <form action="/remove-bg-basic" method="post" enctype="multipart/form-data">
+                <div class="upload-box"><input type="file" name="file" accept="image/*" required></div>
+                <div class="field"><label>White threshold (0 - 255)</label><input type="number" name="threshold" min="0" max="255" value="240" required></div>
+                <button class="btn-purple" type="submit">Remove Background</button>
+            </form>
+        </div>
+
+        <div class="form-block">
+            <h3>Image to SVG</h3>
+            <form action="/image-to-svg" method="post" enctype="multipart/form-data">
+                <div class="upload-box"><input type="file" name="file" accept="image/*" required></div>
+                <button class="btn-purple" type="submit">Convert to SVG</button>
+            </form>
+        </div>
+
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Reduce File Size</h3>
+            <form action="/reduce-image-size" method="post" enctype="multipart/form-data">
+                <div class="upload-box"><input type="file" name="file" accept="image/*" required></div>
+                <div class="field"><label>WEBP quality (10 - 95)</label><input type="number" name="quality" min="10" max="95" value="50" required></div>
+                <button class="btn-purple" type="submit">Reduce Size</button>
+            </form>
+        </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>High-traffic image tools</h2>
+        <div class="tool-list">
+            <div class="tool-item"><strong>HEIC to JPG</strong><span class="muted">Very common for iPhone users.</span></div>
+            <div class="tool-item"><strong>Image Compressor</strong><span class="muted">One of the most searched tools.</span></div>
+            <div class="tool-item"><strong>Background Remover</strong><span class="muted">Strong search demand.</span></div>
+            <div class="tool-item"><strong>Image Resizer</strong><span class="muted">Needed for web and social uploads.</span></div>
+            <div class="tool-item"><strong>WEBP / JPG / PNG</strong><span class="muted">Daily conversion needs.</span></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
