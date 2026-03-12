@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}UUID Generator Online | ToolNova{% endblock %}
+
+{% block content %}
+
+<h1>UUID Generator</h1>
+
+<p>Generate random UUID instantly.</p>
+
+<button onclick="generateUUID()">Generate UUID</button>
+
+<p id="uuid"></p>
+
+<script>
+function generateUUID() {
+  const uuid = crypto.randomUUID();
+  document.getElementById("uuid").innerText = uuid;
+}
+</script>
+
+{% endblock %}

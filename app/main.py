@@ -1071,3 +1071,9 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/merge-pdf", response_class=HTMLResponse)
 async def merge_pdf(request: Request):
     return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
+@app.get("/uuid-generator", response_class=HTMLResponse)
+async def uuid_generator(request: Request):
+    return templates.TemplateResponse(
+        "tools/uuid_generator.html",
+        {"request": request}
+    )
