@@ -3,10 +3,9 @@
 {% block content %}
 
 <h1>PDF to Word Converter</h1>
-
 <p>Convert PDF files to editable Word documents.</p>
 
-<form method="post" enctype="multipart/form-data">
+<form action="/pdf-to-word" method="post" enctype="multipart/form-data">
 
 <input type="file" name="file" accept=".pdf" required>
 
