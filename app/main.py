@@ -1114,3 +1114,32 @@ async def password_generator_page(request: Request):
 @app.get("/json-formatter", response_class=HTMLResponse)
 async def json_formatter_page(request: Request):
     return templates.TemplateResponse("tools/json_formatter.html", {"request": request})
+
+@app.get("/uuid-generator", response_class=HTMLResponse)
+async def uuid_generator_page(request: Request):
+    return templates.TemplateResponse("tools/uuid_generator.html", {"request": request})
+
+
+@app.get("/pdf-to-word", response_class=HTMLResponse)
+async def pdf_to_word_page(request: Request):
+    return templates.TemplateResponse("tools/pdf_to_word.html", {"request": request})
+
+
+@app.get("/word-to-pdf", response_class=HTMLResponse)
+async def word_to_pdf_page(request: Request):
+    return templates.TemplateResponse("tools/word_to_pdf.html", {"request": request})
+
+
+@app.get("/qr-code-generator", response_class=HTMLResponse)
+async def qr_generator_page(request: Request):
+    return templates.TemplateResponse("tools/qr_generator.html", {"request": request})
+
+
+@app.get("/password-generator", response_class=HTMLResponse)
+async def password_generator_page(request: Request):
+    return templates.TemplateResponse("tools/password_generator.html", {"request": request})
+
+
+@app.get("/json-formatter", response_class=HTMLResponse)
+async def json_formatter_page(request: Request):
+    return templates.TemplateResponse("tools/json_formatter.html", {"request": request})
