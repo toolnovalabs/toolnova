@@ -1056,27 +1056,11 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
     except Exception as e:
         return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
 
-from fastapi.responses import FileResponse
-
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     return FileResponse("sitemap.xml")
 
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-from fastapi import Request
 
-templates = Jinja2Templates(directory="templates")
-
-@app.get("/merge-pdf", response_class=HTMLResponse)
-async def merge_pdf(request: Request):
-    return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
-@app.get("/uuid-generator", response_class=HTMLResponse)
-async def uuid_generator(request: Request):
-    return templates.TemplateResponse(
-        "tools/uuid_generator.html",
-        {"request": request}
-    )
 @app.get("/merge-pdf", response_class=HTMLResponse)
 async def merge_pdf_page(request: Request):
     return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
@@ -1100,3 +1084,33 @@ async def heic_to_jpg_page(request: Request):
 @app.get("/image-compressor", response_class=HTMLResponse)
 async def image_compressor_page(request: Request):
     return templates.TemplateResponse("tools/image_compressor.html", {"request": request})
+
+
+@app.get("/uuid-generator", response_class=HTMLResponse)
+async def uuid_generator_page(request: Request):
+    return templates.TemplateResponse("tools/uuid_generator.html", {"request": request})
+
+
+@app.get("/pdf-to-word", response_class=HTMLResponse)
+async def pdf_to_word_page(request: Request):
+    return templates.TemplateResponse("tools/pdf_to_word.html", {"request": request})
+
+
+@app.get("/word-to-pdf", response_class=HTMLResponse)
+async def word_to_pdf_page(request: Request):
+    return templates.TemplateResponse("tools/word_to_pdf.html", {"request": request})
+
+
+@app.get("/qr-code-generator", response_class=HTMLResponse)
+async def qr_generator_page(request: Request):
+    return templates.TemplateResponse("tools/qr_generator.html", {"request": request})
+
+
+@app.get("/password-generator", response_class=HTMLResponse)
+async def password_generator_page(request: Request):
+    return templates.TemplateResponse("tools/password_generator.html", {"request": request})
+
+
+@app.get("/json-formatter", response_class=HTMLResponse)
+async def json_formatter_page(request: Request):
+    return templates.TemplateResponse("tools/json_formatter.html", {"request": request})

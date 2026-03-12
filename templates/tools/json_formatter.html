@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>JSON Formatter</h1>
+
+<textarea id="jsoninput" rows="10"></textarea>
+
+<button onclick="formatJSON()">Format JSON</button>
+
+<textarea id="jsonoutput" rows="10"></textarea>
+
+<script>
+
+function formatJSON(){
+
+let input=document.getElementById("jsoninput").value
+
+try{
+
+let obj=JSON.parse(input)
+
+document.getElementById("jsonoutput").value=JSON.stringify(obj,null,2)
+
+}
+
+catch{
+
+alert("Invalid JSON")
+
+}
+
+}
+
+</script>
+
+{% endblock %}
