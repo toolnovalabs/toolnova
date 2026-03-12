@@ -31,7 +31,7 @@ from reportlab.lib.pagesizes import A4
 register_heif_opener()
 
 # main.py proje kökündeyse bunu kullan
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Eğer main.py app/ gibi alt klasördeyse bunu kullan:
 # BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +40,7 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 TEMP_DIR = BASE_DIR / "temp"
 SITEMAP_PATH = BASE_DIR / "sitemap.xml"
-
+ROBOTS_PATH = BASE_DIR / "robots.txt"
 STATIC_DIR.mkdir(exist_ok=True)
 TEMP_DIR.mkdir(exist_ok=True)
 
@@ -1426,12 +1426,12 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
 # --------------------------------------------------
 # SITEMAP
 # --------------------------------------------------
-SITEMAP_PATH = BASE_DIR / "sitemap.xml"
+
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     return FileResponse(str(SITEMAP_PATH), media_type="application/xml")
 
-ROBOTS_PATH = BASE_DIR / "robots.txt"
+
 
 @app.get("/robots.txt", include_in_schema=False)
 def robots():
