@@ -1055,3 +1055,9 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
         return templates.TemplateResponse("utility.html", {"request": request, "result": text[:20000], "error": None})
     except Exception as e:
         return templates.TemplateResponse("utility.html", {"request": request, "result": None, "error": f"Error: {str(e)}"})
+
+from fastapi.responses import FileResponse
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap():
+    return FileResponse("sitemap.xml")
