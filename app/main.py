@@ -1061,3 +1061,13 @@ from fastapi.responses import FileResponse
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
     return FileResponse("sitemap.xml")
+
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/merge-pdf", response_class=HTMLResponse)
+async def merge_pdf(request: Request):
+    return templates.TemplateResponse("tools/merge_pdf.html", {"request": request})
