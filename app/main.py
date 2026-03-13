@@ -216,7 +216,9 @@ def remove_file_safely(path: Path | None):
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
 # --------------------------------------------------
 # MAIN CATEGORY PAGES
 # --------------------------------------------------
@@ -1422,7 +1424,46 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
             {"request": request, "result": None, "error": f"Error: {str(e)}"},
         )
 
+@app.get("/free-pdf-tools")
+async def free_pdf_tools(request: Request):
+    return templates.TemplateResponse(
+        "seo/seo_page.html",
+        {
+            "request": request,
+            "title": "Free PDF Tools Online",
+            "heading": "Free PDF Tools Online",
+            "subtitle": "Merge, split, compress and convert PDF files easily.",
+            "description": "Use free PDF tools online including merge, split, compress and convert PDF files quickly."
+        }
+    )
 
+
+@app.get("/free-image-tools")
+async def free_image_tools(request: Request):
+    return templates.TemplateResponse(
+        "seo/seo_page.html",
+        {
+            "request": request,
+            "title": "Free Image Tools Online",
+            "heading": "Free Image Tools",
+            "subtitle": "Compress, convert and resize images online.",
+            "description": "Free image tools including image compressor, HEIC converter and resize tools."
+        }
+    )
+
+
+@app.get("/online-utility-tools")
+async def utility_tools(request: Request):
+    return templates.TemplateResponse(
+        "seo/seo_page.html",
+        {
+            "request": request,
+            "title": "Online Utility Tools",
+            "heading": "Online Utility Tools",
+            "subtitle": "Password generator, JSON formatter and more.",
+            "description": "Use useful online utility tools including password generator and JSON formatter."
+        }
+    )
 # --------------------------------------------------
 # SITEMAP
 # --------------------------------------------------

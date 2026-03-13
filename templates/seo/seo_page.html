@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | ToolNova{% endblock %}
+
+{% block meta_description %}
+{{ description }}
+{% endblock %}
+
+{% block content %}
+
+<section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
+<h1>{{ heading }}</h1>
+<p>{{ subtitle }}</p>
+</section>
+
+<div class="card">
+
+<h2>Popular Tools</h2>
+
+<div class="tool-list">
+
+<div class="tool-item">
+<strong><a href="/merge-pdf">Merge PDF</a></strong>
+<span class="muted">Combine multiple PDF files into one document.</span>
+</div>
+
+<div class="tool-item">
+<strong><a href="/compress-pdf">Compress PDF</a></strong>
+<span class="muted">Reduce PDF file size quickly.</span>
+</div>
+
+<div class="tool-item">
+<strong><a href="/image-compressor">Image Compressor</a></strong>
+<span class="muted">Compress JPG and PNG images.</span>
+</div>
+
+<div class="tool-item">
+<strong><a href="/heic-to-jpg">HEIC to JPG</a></strong>
+<span class="muted">Convert HEIC images to JPG format.</span>
+</div>
+
+<div class="tool-item">
+<strong><a href="/password-generator">Password Generator</a></strong>
+<span class="muted">Create secure random passwords.</span>
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
