@@ -27,7 +27,7 @@ import qrcode
 import markdown as md
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-
+from app.seo_units import SEO_UNIT_PAGES
 register_heif_opener()
 
 # main.py proje kökündeyse bunu kullan
@@ -1477,3 +1477,23 @@ def sitemap():
 @app.get("/robots.txt", include_in_schema=False)
 def robots():
     return FileResponse(str(ROBOTS_PATH), media_type="text/plain")
+
+SEO_PAGES_BY_SLUG = {page["slug"]: page for page in SEO_UNIT_PAGES}
+
+@app.get("/convert/{slug}", response_class=HTMLResponse)
+async def seo_unit_page(request: Request, slug: str):
+    page = SEO_PAGES_BY_SLUG.get(slug)
+    if not page:
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request},
+            status_code=404,
+        )
+
+    return templates.TemplateResponse(
+        "seo/unit_converter_landing.html",
+        {
+            "request": request,
+            "page": page,
+        },
+    )

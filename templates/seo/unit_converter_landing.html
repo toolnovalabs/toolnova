@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} | ToolNova{% endblock %}
+
+{% block meta_description %}
+Convert {{ page.from_unit }} to {{ page.to_unit }} instantly with ToolNova's free online {{ page.category|lower }} converter.
+{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#059669 0%,#0f172a 100%);">
+    <h1>{{ page.title }}</h1>
+    <p>Free online {{ page.category|lower }} converter for {{ page.from_unit }} to {{ page.to_unit }}.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="form-block" style="margin-bottom:0;">
+            <h3>Convert {{ page.from_unit }} to {{ page.to_unit }}</h3>
+
+            <div class="field">
+                <label for="inputValue">Value in {{ page.from_unit }}</label>
+                <input type="number" step="any" id="inputValue" placeholder="Enter value">
+            </div>
+
+            <button class="btn-green" type="button" onclick="runConversion()">Convert</button>
+
+            <div id="resultBox" class="result" style="margin-top:14px; display:none;"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>About this conversion</h2>
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Category</strong>
+                <span class="muted">{{ page.category }}</span>
+            </div>
+            <div class="tool-item">
+                <strong>From</strong>
+                <span class="muted">{{ page.from_unit }}</span>
+            </div>
+            <div class="tool-item">
+                <strong>To</strong>
+                <span class="muted">{{ page.to_unit }}</span>
+            </div>
+            <div class="tool-item">
+                <strong>More tools</strong>
+                <span class="muted"><a href="/units">Open full unit converter</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div
+    id="converterData"
+    data-formula="{{ page.formula | e if page.formula is defined else '' }}"
+    data-factor="{{ page.factor if page.factor is defined else '' }}"
+    data-from-unit="{{ page.from_unit | e }}"
+    data-to-unit="{{ page.to_unit | e }}"
+></div>
+
+<script>
+function formatNumber(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+        return "0";
+    }
+    return num.toFixed(8).replace(/\.?0+$/, "");
+}
+
+function runConversion() {
+    const dataEl = document.getElementById("converterData");
+    const inputEl = document.getElementById("inputValue");
+    const resultBox = document.getElementById("resultBox");
+
+    const rawValue = inputEl.value.trim();
+    const formula = dataEl.dataset.formula || "";
+    const factorText = dataEl.dataset.factor || "";
+    const fromUnit = dataEl.dataset.fromUnit || "";
+    const toUnit = dataEl.dataset.toUnit || "";
+
+    if (rawValue === "") {
+        resultBox.style.display = "block";
+        resultBox.innerText = "Please enter a value.";
+        return;
+    }
+
+    const x = Number(rawValue);
+
+    if (!Number.isFinite(x)) {
+        resultBox.style.display = "block";
+        resultBox.innerText = "Please enter a valid number.";
+        return;
+    }
+
+    let result;
+
+    try {
+        if (formula !== "") {
+            result = new Function("x", "return " + formula + ";")(x);
+        } else if (factorText !== "") {
+            result = x * Number(factorText);
+        } else {
+            resultBox.style.display = "block";
+            resultBox.innerText = "Conversion data is missing.";
+            return;
+        }
+
+        if (!Number.isFinite(result)) {
+            resultBox.style.display = "block";
+            resultBox.innerText = "Conversion result is invalid.";
+            return;
+        }
+
+        resultBox.style.display = "block";
+        resultBox.innerText = formatNumber(x) + " " + fromUnit + " = " + formatNumber(result) + " " + toUnit;
+    } catch (err) {
+        console.error(err);
+        resultBox.style.display = "block";
+        resultBox.innerText = "Conversion error.";
+    }
+}
+</script>
+{% endblock %}
