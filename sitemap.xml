@@ -1,25 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <url><loc>https://toolnova.onrender.com/</loc><priority>1.0</priority></url>
-  <url><loc>https://toolnova.onrender.com/pdf</loc><priority>0.9</priority></url>
-  <url><loc>https://toolnova.onrender.com/image</loc><priority>0.9</priority></url>
-  <url><loc>https://toolnova.onrender.com/office</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/units</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/utility</loc><priority>0.8</priority></url>
+  <!-- MAIN -->
+  <url>
+    <loc>https://toolnova.onrender.com/</loc>
+    <priority>1.0</priority>
+  </url>
 
-  <url><loc>https://toolnova.onrender.com/merge-pdf</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/split-pdf</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/compress-pdf</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/pdf-to-word</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/word-to-pdf</loc><priority>0.8</priority></url>
+  <!-- CATEGORIES -->
+  <url>
+    <loc>https://toolnova.onrender.com/pdf</loc>
+    <priority>0.9</priority>
+  </url>
 
-  <url><loc>https://toolnova.onrender.com/heic-to-jpg</loc><priority>0.8</priority></url>
-  <url><loc>https://toolnova.onrender.com/image-compressor</loc><priority>0.8</priority></url>
+  <url>
+    <loc>https://toolnova.onrender.com/image</loc>
+    <priority>0.9</priority>
+  </url>
 
-  <url><loc>https://toolnova.onrender.com/uuid-generator</loc><priority>0.7</priority></url>
-  <url><loc>https://toolnova.onrender.com/qr-code-generator</loc><priority>0.7</priority></url>
-  <url><loc>https://toolnova.onrender.com/password-generator</loc><priority>0.7</priority></url>
-  <url><loc>https://toolnova.onrender.com/json-formatter</loc><priority>0.7</priority></url>
+  <url>
+    <loc>https://toolnova.onrender.com/office</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/units</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/utility</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- PDF TOOLS -->
+  <url>
+    <loc>https://toolnova.onrender.com/merge-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/split-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/compress-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/pdf-to-word</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/word-to-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- IMAGE TOOLS -->
+  <url>
+    <loc>https://toolnova.onrender.com/heic-to-jpg</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/image-compressor</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- UTILITY TOOLS -->
+  <url>
+    <loc>https://toolnova.onrender.com/uuid-generator</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/qr-code-generator</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/password-generator</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/json-formatter</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- SEO PAGES -->
+  <url>
+    <loc>https://toolnova.onrender.com/free-pdf-tools</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/free-image-tools</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/online-utility-tools</loc>
+    <priority>0.8</priority>
+  </url>
 
 </urlset>
