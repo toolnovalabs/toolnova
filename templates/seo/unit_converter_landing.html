@@ -3,7 +3,7 @@
 {% block title %}{{ page.title }} | ToolNova{% endblock %}
 
 {% block meta_description %}
-Convert {{ page.from_unit }} to {{ page.to_unit }} instantly with ToolNova's free online {{ page.category|lower }} converter.
+{{ page.meta_description if page.meta_description else ("Convert " ~ page.from_unit ~ " to " ~ page.to_unit ~ " instantly with ToolNova free online converter.") }}
 {% endblock %}
 
 {% block content %}
@@ -14,7 +14,7 @@ Convert {{ page.from_unit }} to {{ page.to_unit }} instantly with ToolNova's fre
 
 <div class="grid-2">
     <div class="card">
-        <div class="form-block" style="margin-bottom:0;">
+        <div class="form-block">
             <h3>Convert {{ page.from_unit }} to {{ page.to_unit }}</h3>
 
             <div class="field">
@@ -26,10 +26,46 @@ Convert {{ page.from_unit }} to {{ page.to_unit }} instantly with ToolNova's fre
 
             <div id="resultBox" class="result" style="margin-top:14px; display:none;"></div>
         </div>
+
+        <div class="form-block">
+            <h3>About this conversion</h3>
+            <p>
+                Use ToolNova to convert {{ page.from_unit.lower() }} to {{ page.to_unit.lower() }} instantly.
+                This free {{ page.category|lower }} converter works directly in your browser and gives quick,
+                accurate results.
+            </p>
+            <p>
+                {{ page.from_unit }} to {{ page.to_unit }} conversion is commonly used in calculations,
+                engineering, education, travel, shopping and everyday measurement tasks.
+            </p>
+        </div>
+
+        {% if page.factor is defined %}
+        <div class="form-block">
+            <h3>Conversion Formula</h3>
+            <p>
+                <strong>1 {{ page.from_unit }} = {{ "%.10f"|format(page.factor)|replace(",", ".")|trim("0")|trim(".") }} {{ page.to_unit }}</strong>
+            </p>
+            <p>
+                To convert {{ page.from_unit.lower() }} to {{ page.to_unit.lower() }}, multiply the value by
+                {{ "%.10f"|format(page.factor)|replace(",", ".")|trim("0")|trim(".") }}.
+            </p>
+        </div>
+        {% endif %}
+
+        {% if page.formula is defined and page.formula %}
+        <div class="form-block">
+            <h3>Conversion Formula</h3>
+            <p>
+                {{ page.from_unit }} → {{ page.to_unit }}:
+                <strong>{{ page.formula }}</strong>
+            </p>
+        </div>
+        {% endif %}
     </div>
 
     <div class="card">
-        <h2>About this conversion</h2>
+        <h2>Quick Info</h2>
         <div class="tool-list">
             <div class="tool-item">
                 <strong>Category</strong>
@@ -48,8 +84,48 @@ Convert {{ page.from_unit }} to {{ page.to_unit }} instantly with ToolNova's fre
                 <span class="muted"><a href="/units">Open full unit converter</a></span>
             </div>
         </div>
+
+        {% if conversion_table %}
+        <div class="form-block" style="margin-top:16px; margin-bottom:0;">
+            <h3>Quick Conversion Table</h3>
+            <table class="table-view">
+                <thead>
+                    <tr>
+                        <th>{{ page.from_unit }}</th>
+                        <th>{{ page.to_unit }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in conversion_table %}
+                    <tr>
+                        <td>{{ row.input }}</td>
+                        <td>{{ row.output }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
     </div>
 </div>
+
+{% if related_pages %}
+<div class="card" style="margin-top:22px;">
+    <h2>Related Converters</h2>
+    <div class="tool-list">
+        {% for item in related_pages %}
+        <div class="tool-item">
+            <a href="/convert/{{ item.slug }}" style="text-decoration:none;">
+                <strong>{{ item.title }}</strong>
+            </a>
+            <span class="muted" style="display:block;">
+                Convert {{ item.from_unit }} to {{ item.to_unit }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <div
     id="converterData"

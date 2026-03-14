@@ -11,7 +11,7 @@ import zipfile
 from urllib.parse import urlparse, parse_qs
 from datetime import date, datetime
 from html import escape
-from fastapi import FastAPI, Request, UploadFile, File, Form
+from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -32,7 +32,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
 from app.seo_units import SEO_UNIT_PAGES
-
+from app.seo_slug_generator import SEO_SLUGS
 register_heif_opener()
 
 # --------------------------------------------------
@@ -2173,7 +2173,7 @@ async def utility_tools(request: Request):
 # --------------------------------------------------
 # STATIC SEO FILES
 # --------------------------------------------------
-from html import escape
+
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
@@ -2221,7 +2221,22 @@ def sitemap():
     content = "\n".join(xml_parts)
     return Response(content=content, media_type="application/xml")
 
+@app.get("/convert/{slug}")
+def convert_seo_page(slug: str, request: Request):
 
+    if slug not in SEO_SLUGS:
+        raise HTTPException(status_code=404)
+
+    title = slug.replace("-", " ").title()
+
+    return templates.TemplateResponse(
+        "seo_converter.html",
+        {
+            "request": request,
+            "title": title,
+            "slug": slug,
+        },
+    )
 @app.get("/robots.txt", include_in_schema=False)
 def robots():
     content = """User-agent: *
@@ -2235,8 +2250,6 @@ Sitemap: https://toolnova.onrender.com/sitemap.xml
 # PROGRAMMATIC SEO UNIT PAGES
 # --------------------------------------------------
 SEO_PAGES_BY_SLUG = {page["slug"]: page for page in SEO_UNIT_PAGES}
-
-
 @app.get("/convert/{slug}", response_class=HTMLResponse)
 async def seo_unit_page(request: Request, slug: str):
     page = SEO_PAGES_BY_SLUG.get(slug)
@@ -2250,11 +2263,41 @@ async def seo_unit_page(request: Request, slug: str):
             status_code=404,
         )
 
+    related = []
+    category = page.get("category")
+    from_unit = page.get("from_unit")
+    to_unit = page.get("to_unit")
+
+    for item in SEO_UNIT_PAGES:
+        if item["slug"] == page["slug"]:
+            continue
+        if item.get("category") != category:
+            continue
+        if item.get("from_unit") == from_unit or item.get("to_unit") == to_unit:
+            related.append(item)
+
+    related = related[:8]
+
+    sample_values = [1, 5, 10, 25, 50, 100]
+    conversion_table = []
+
+    if "factor" in page:
+        factor = page["factor"]
+        for value in sample_values:
+            conversion_table.append(
+                {
+                    "input": value,
+                    "output": round(value * factor, 6),
+                }
+            )
+
     return templates.TemplateResponse(
         "seo/unit_converter_landing.html",
         {
             "request": request,
             "page": page,
             "plan": get_current_plan(request),
+            "related_pages": related,
+            "conversion_table": conversion_table,
         },
     )
