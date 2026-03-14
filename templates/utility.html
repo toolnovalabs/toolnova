@@ -194,35 +194,53 @@
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://d3js.org/d3.v3.min.js"></script>
         <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
 
         <script>
             const map = L.map('kmlMap');
+            map.setView([39.0, 35.0], 6);
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
             const kmlText = `{{ kml_map | safe }}`;
-            const layer = omnivore.kml.parse(kmlText);
+            console.log("KML loaded, length:", kmlText.length);
 
-            layer.on('ready', function () {
-                map.addLayer(layer);
+            if (typeof omnivore === "undefined") {
+                console.error("leaflet-omnivore not loaded");
+            } else {
                 try {
-                    const bounds = layer.getBounds();
-                    if (bounds && bounds.isValid()) {
-                        map.fitBounds(bounds, { padding: [20, 20] });
-                    } else {
+                    const layer = omnivore.kml.parse(kmlText);
+
+                    layer.on('ready', function () {
+                        console.log("KML layer ready");
+                        map.addLayer(layer);
+
+                        try {
+                            const bounds = layer.getBounds();
+                            if (bounds && bounds.isValid()) {
+                                map.fitBounds(bounds, { padding: [20, 20] });
+                            } else {
+                                map.setView([39.0, 35.0], 6);
+                            }
+                        } catch (e) {
+                            console.error("Bounds error:", e);
+                            map.setView([39.0, 35.0], 6);
+                        }
+                    });
+
+                    layer.on('error', function (e) {
+                        console.error("KML layer error:", e);
                         map.setView([39.0, 35.0], 6);
-                    }
+                    });
                 } catch (e) {
+                    console.error("KML parse error:", e);
                     map.setView([39.0, 35.0], 6);
                 }
-            });
-
-            layer.on('error', function () {
-                map.setView([39.0, 35.0], 6);
-            });
+            }
         </script>
         {% endif %}
     </div>
