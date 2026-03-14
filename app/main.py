@@ -31,7 +31,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-from app.seo_units import SEO_UNIT_PAGES, SEO_PAGES_BY_SLUG
+from app.seo_units import SEO_UNIT_PAGES
 
 register_heif_opener()
 
@@ -43,8 +43,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 TEMP_DIR = BASE_DIR / "temp"
-SITEMAP_PATH = BASE_DIR / "sitemap.xml"
-ROBOTS_PATH = BASE_DIR / "robots.txt"
+
+SITEMAP_PATH = STATIC_DIR / "sitemap.xml"
+ROBOTS_PATH = STATIC_DIR / "robots.txt"
 
 FONTS_DIR = STATIC_DIR / "fonts"
 DEJAVU_FONT_PATH = FONTS_DIR / "DejaVuSans.ttf"
@@ -244,14 +245,6 @@ TEMPERATURE_UNITS = {"Celsius": None, "Fahrenheit": None, "Kelvin": None}
 # HELPERS
 # --------------------------------------------------
 def get_current_plan(request: Request) -> str:
-    """
-    Şimdilik test için query param:
-    ?plan=free
-    ?plan=pro
-    ?plan=business
-
-    Sonradan login / DB / Stripe ile değiştirilecek.
-    """
     plan = (request.query_params.get("plan") or "free").strip().lower()
     if plan not in PLAN_LIMITS:
         plan = "free"
@@ -2118,7 +2111,7 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
 # --------------------------------------------------
 # SEO PAGES
 # --------------------------------------------------
-@app.get("/free-pdf-tools")
+@app.get("/free-pdf-tools", response_class=HTMLResponse)
 async def free_pdf_tools(request: Request):
     return templates.TemplateResponse(
         "seo/seo_page.html",
@@ -2129,11 +2122,11 @@ async def free_pdf_tools(request: Request):
             "subtitle": "Merge, split, compress and convert PDF files easily.",
             "description": "Use free PDF tools online including merge, split, compress and convert PDF files quickly.",
             "plan": get_current_plan(request),
-        }
+        },
     )
 
 
-@app.get("/free-image-tools")
+@app.get("/free-image-tools", response_class=HTMLResponse)
 async def free_image_tools(request: Request):
     return templates.TemplateResponse(
         "seo/seo_page.html",
@@ -2144,11 +2137,11 @@ async def free_image_tools(request: Request):
             "subtitle": "Compress, convert and resize images online.",
             "description": "Free image tools including image compressor, HEIC converter and resize tools.",
             "plan": get_current_plan(request),
-        }
+        },
     )
 
 
-@app.get("/online-utility-tools")
+@app.get("/online-utility-tools", response_class=HTMLResponse)
 async def utility_tools(request: Request):
     return templates.TemplateResponse(
         "seo/seo_page.html",
@@ -2159,20 +2152,24 @@ async def utility_tools(request: Request):
             "subtitle": "Password generator, JSON formatter and more.",
             "description": "Use useful online utility tools including password generator and JSON formatter.",
             "plan": get_current_plan(request),
-        }
+        },
     )
 
 
 # --------------------------------------------------
-# SITEMAP
+# STATIC SEO FILES
 # --------------------------------------------------
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
+    if not SITEMAP_PATH.exists():
+        return Response(content="sitemap.xml not found", media_type="text/plain", status_code=404)
     return FileResponse(str(SITEMAP_PATH), media_type="application/xml")
 
 
 @app.get("/robots.txt", include_in_schema=False)
 def robots():
+    if not ROBOTS_PATH.exists():
+        return Response(content="robots.txt not found", media_type="text/plain", status_code=404)
     return FileResponse(str(ROBOTS_PATH), media_type="text/plain")
 
 
