@@ -54,8 +54,13 @@ STATIC_DIR.mkdir(exist_ok=True)
 TEMP_DIR.mkdir(exist_ok=True)
 FONTS_DIR.mkdir(exist_ok=True)
 
-if DEJAVU_FONT_PATH.exists():
-    pdfmetrics.registerFont(TTFont("DejaVuSans", str(DEJAVU_FONT_PATH)))
+try:
+    if DEJAVU_FONT_PATH.exists():
+        pdfmetrics.registerFont(TTFont("DejaVuSans", str(DEJAVU_FONT_PATH)))
+except Exception as e:
+    print("Font load failed:", e)
+
+
 
 app = FastAPI(title="ToolNova")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
