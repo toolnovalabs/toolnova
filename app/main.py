@@ -2161,16 +2161,130 @@ async def utility_tools(request: Request):
 # --------------------------------------------------
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
-    if not SITEMAP_PATH.exists():
-        return Response(content="sitemap.xml not found", media_type="text/plain", status_code=404)
-    return FileResponse(str(SITEMAP_PATH), media_type="application/xml")
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- MAIN -->
+  <url>
+    <loc>https://toolnova.onrender.com/</loc>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- CATEGORIES -->
+  <url>
+    <loc>https://toolnova.onrender.com/pdf</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/image</loc>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/office</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/units</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/utility</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- PDF TOOLS -->
+  <url>
+    <loc>https://toolnova.onrender.com/merge-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/split-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/compress-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/pdf-to-word</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/word-to-pdf</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- IMAGE TOOLS -->
+  <url>
+    <loc>https://toolnova.onrender.com/heic-to-jpg</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/image-compressor</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- UTILITY TOOLS -->
+  <url>
+    <loc>https://toolnova.onrender.com/uuid-generator</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/qr-code-generator</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/password-generator</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/json-formatter</loc>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- SEO PAGES -->
+  <url>
+    <loc>https://toolnova.onrender.com/free-pdf-tools</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/free-image-tools</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://toolnova.onrender.com/online-utility-tools</loc>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
+"""
+    return Response(content=content, media_type="application/xml")
 
 
 @app.get("/robots.txt", include_in_schema=False)
 def robots():
-    if not ROBOTS_PATH.exists():
-        return Response(content="robots.txt not found", media_type="text/plain", status_code=404)
-    return FileResponse(str(ROBOTS_PATH), media_type="text/plain")
+    content = """User-agent: *
+Allow: /
+
+Sitemap: https://toolnova.onrender.com/sitemap.xml
+"""
+    return Response(content=content, media_type="text/plain")
+
+
 
 
 # --------------------------------------------------
