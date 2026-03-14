@@ -10,7 +10,7 @@ import string
 import zipfile
 from urllib.parse import urlparse, parse_qs
 from datetime import date, datetime
-
+from html import escape
 from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -43,12 +43,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 TEMP_DIR = BASE_DIR / "temp"
-
-SITEMAP_PATH = STATIC_DIR / "sitemap.xml"
-ROBOTS_PATH = STATIC_DIR / "robots.txt"
-
 FONTS_DIR = STATIC_DIR / "fonts"
+
 DEJAVU_FONT_PATH = FONTS_DIR / "DejaVuSans.ttf"
+DEJAVU_BOLD_PATH = FONTS_DIR / "DejaVuSans-Bold.ttf"
 
 STATIC_DIR.mkdir(exist_ok=True)
 TEMP_DIR.mkdir(exist_ok=True)
@@ -57,15 +55,14 @@ FONTS_DIR.mkdir(exist_ok=True)
 try:
     if DEJAVU_FONT_PATH.exists():
         pdfmetrics.registerFont(TTFont("DejaVuSans", str(DEJAVU_FONT_PATH)))
+    if DEJAVU_BOLD_PATH.exists():
+        pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", str(DEJAVU_BOLD_PATH)))
 except Exception as e:
     print("Font load failed:", e)
-
-
 
 app = FastAPI(title="ToolNova")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
 # --------------------------------------------------
 # PLAN / PRICING LIMITS
 # --------------------------------------------------
@@ -1737,8 +1734,6 @@ async def word_to_pdf_page(request: Request):
             "limits": get_plan_limits(request),
         },
     )
-
-
 @app.post("/word-to-pdf", response_class=HTMLResponse)
 @app.post("/docx-to-pdf", response_class=HTMLResponse)
 async def docx_to_pdf(request: Request, file: UploadFile = File(...)):
@@ -1776,22 +1771,31 @@ async def docx_to_pdf(request: Request, file: UploadFile = File(...)):
         bottom_margin = 50
         y = top_margin
 
-        font_name = "Helvetica"
-        if DEJAVU_FONT_PATH.exists():
-            font_name = "DejaVuSans"
+        font_regular = "Helvetica"
+        font_bold = "Helvetica-Bold"
 
-        c.setFont(font_name, 11)
+        if DEJAVU_FONT_PATH.exists():
+            font_regular = "DejaVuSans"
+        if DEJAVU_BOLD_PATH.exists():
+            font_bold = "DejaVuSans-Bold"
+
+        # Başlık
+        c.setFont(font_bold, 14)
+        c.drawString(left_margin, y, "Word to PDF Output")
+        y -= 28
+
+        c.setFont(font_regular, 11)
         max_chars = 95
 
         for paragraph in doc.paragraphs:
             text = paragraph.text.strip()
 
             if not text:
-                y -= 16
+                y -= 14
                 if y < bottom_margin:
                     c.showPage()
-                    c.setFont(font_name, 11)
                     y = top_margin
+                    c.setFont(font_regular, 11)
                 continue
 
             chunks = [text[i:i + max_chars] for i in range(0, len(text), max_chars)]
@@ -1802,8 +1806,8 @@ async def docx_to_pdf(request: Request, file: UploadFile = File(...)):
 
                 if y < bottom_margin:
                     c.showPage()
-                    c.setFont(font_name, 11)
                     y = top_margin
+                    c.setFont(font_regular, 11)
 
         c.save()
 
@@ -2044,7 +2048,12 @@ async def age_calculator(request: Request, birthdate: str = Form(...)):
             "utility.html",
             {"request": request, "result": None, "error": f"Error: {str(e)}", "plan": get_current_plan(request)},
         )
-
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    favicon_path = STATIC_DIR / "img" / "favicon.png"
+    if favicon_path.exists():
+        return FileResponse(str(favicon_path), media_type="image/png")
+    return Response(status_code=404)
 
 @app.post("/favicon-generator", response_class=HTMLResponse)
 async def favicon_generator(request: Request, file: UploadFile = File(...)):
@@ -2164,119 +2173,52 @@ async def utility_tools(request: Request):
 # --------------------------------------------------
 # STATIC SEO FILES
 # --------------------------------------------------
+from html import escape
+
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
-    content = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    static_urls = [
+        ("https://toolnova.onrender.com/", "1.0"),
+        ("https://toolnova.onrender.com/pdf", "0.9"),
+        ("https://toolnova.onrender.com/image", "0.9"),
+        ("https://toolnova.onrender.com/office", "0.8"),
+        ("https://toolnova.onrender.com/units", "0.8"),
+        ("https://toolnova.onrender.com/utility", "0.8"),
+        ("https://toolnova.onrender.com/merge-pdf", "0.8"),
+        ("https://toolnova.onrender.com/split-pdf", "0.8"),
+        ("https://toolnova.onrender.com/compress-pdf", "0.8"),
+        ("https://toolnova.onrender.com/pdf-to-word", "0.8"),
+        ("https://toolnova.onrender.com/word-to-pdf", "0.8"),
+        ("https://toolnova.onrender.com/heic-to-jpg", "0.8"),
+        ("https://toolnova.onrender.com/image-compressor", "0.8"),
+        ("https://toolnova.onrender.com/uuid-generator", "0.7"),
+        ("https://toolnova.onrender.com/qr-code-generator", "0.7"),
+        ("https://toolnova.onrender.com/password-generator", "0.7"),
+        ("https://toolnova.onrender.com/json-formatter", "0.7"),
+        ("https://toolnova.onrender.com/free-pdf-tools", "0.8"),
+        ("https://toolnova.onrender.com/free-image-tools", "0.8"),
+        ("https://toolnova.onrender.com/online-utility-tools", "0.8"),
+    ]
 
-  <!-- MAIN -->
-  <url>
-    <loc>https://toolnova.onrender.com/</loc>
-    <priority>1.0</priority>
-  </url>
+    seo_urls = [
+        (f"https://toolnova.onrender.com/convert/{page['slug']}", "0.7")
+        for page in SEO_UNIT_PAGES
+    ]
 
-  <!-- CATEGORIES -->
-  <url>
-    <loc>https://toolnova.onrender.com/pdf</loc>
-    <priority>0.9</priority>
-  </url>
+    all_urls = static_urls + seo_urls
 
-  <url>
-    <loc>https://toolnova.onrender.com/image</loc>
-    <priority>0.9</priority>
-  </url>
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
 
-  <url>
-    <loc>https://toolnova.onrender.com/office</loc>
-    <priority>0.8</priority>
-  </url>
+    for loc, priority in all_urls:
+        xml_parts.append("  <url>")
+        xml_parts.append(f"    <loc>{escape(loc)}</loc>")
+        xml_parts.append(f"    <priority>{priority}</priority>")
+        xml_parts.append("  </url>")
 
-  <url>
-    <loc>https://toolnova.onrender.com/units</loc>
-    <priority>0.8</priority>
-  </url>
+    xml_parts.append("</urlset>")
 
-  <url>
-    <loc>https://toolnova.onrender.com/utility</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- PDF TOOLS -->
-  <url>
-    <loc>https://toolnova.onrender.com/merge-pdf</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/split-pdf</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/compress-pdf</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/pdf-to-word</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/word-to-pdf</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- IMAGE TOOLS -->
-  <url>
-    <loc>https://toolnova.onrender.com/heic-to-jpg</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/image-compressor</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- UTILITY TOOLS -->
-  <url>
-    <loc>https://toolnova.onrender.com/uuid-generator</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/qr-code-generator</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/password-generator</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/json-formatter</loc>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- SEO PAGES -->
-  <url>
-    <loc>https://toolnova.onrender.com/free-pdf-tools</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/free-image-tools</loc>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://toolnova.onrender.com/online-utility-tools</loc>
-    <priority>0.8</priority>
-  </url>
-
-</urlset>
-"""
+    content = "\n".join(xml_parts)
     return Response(content=content, media_type="application/xml")
 
 
@@ -2288,9 +2230,6 @@ Allow: /
 Sitemap: https://toolnova.onrender.com/sitemap.xml
 """
     return Response(content=content, media_type="text/plain")
-
-
-
 
 # --------------------------------------------------
 # PROGRAMMATIC SEO UNIT PAGES
