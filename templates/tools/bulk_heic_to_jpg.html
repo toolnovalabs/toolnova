@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk HEIC to JPG Converter | ToolNova{% endblock %}
+{% block meta_description %}Convert multiple HEIC files to JPG online. Free bulk HEIC to JPG converter by ToolNova.{% endblock %}
+
+{% block content %}
+<section class="hero" style="background:linear-gradient(135deg,#2563eb 0%,#0f172a 100%);">
+    <h1>Bulk HEIC to JPG Converter</h1>
+    <p>Convert multiple HEIC images to JPG in one ZIP download.</p>
+</section>
+
+<div class="grid-2">
+    <div class="card">
+        <form method="post" action="/bulk-heic-to-jpg" enctype="multipart/form-data">
+            <div class="field">
+                <label>Select HEIC files</label>
+                <input type="file" name="files" accept=".heic,.heif,image/heic,image/heif" multiple required>
+            </div>
+
+            <button class="btn-green" type="submit">Convert to ZIP</button>
+        </form>
+
+        {% if error %}
+        <div class="result" style="margin-top:14px;">
+            {{ error }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Free Plan Limits</h2>
+        <div class="tool-list">
+            <div class="tool-item">
+                <strong>Max files</strong>
+                <span class="muted">{{ max_files }}</span>
+            </div>
+            <div class="tool-item">
+                <strong>Max total upload size</strong>
+                <span class="muted">{{ max_total_mb }} MB</span>
+            </div>
+            <div class="tool-item">
+                <strong>Output</strong>
+                <span class="muted">ZIP file with JPG images</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

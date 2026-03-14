@@ -1,5 +1,6 @@
 from itertools import permutations
 import re
+from typing import Dict, Optional, Set, Tuple, List
 
 
 def slugify(text: str) -> str:
@@ -14,11 +15,16 @@ def slugify(text: str) -> str:
         ")": "",
         ".": "",
         ",": "",
+        "%": "percent",
+        "+": "plus",
+        "'": "",
+        '"': "",
     }
 
     for old, new in replacements.items():
         text = text.replace(old, new)
 
+    text = text.replace("&", "and")
     text = re.sub(r"\s+", "-", text)
     text = re.sub(r"[^a-z0-9\-]", "", text)
     text = re.sub(r"-{2,}", "-", text).strip("-")
@@ -27,10 +33,10 @@ def slugify(text: str) -> str:
 
 def make_factor_pages(
     category: str,
-    units: dict[str, float],
-    allowed_pairs: set[tuple[str, str]] | None = None,
-) -> list[dict]:
-    pages = []
+    units: Dict[str, float],
+    allowed_pairs: Optional[Set[Tuple[str, str]]] = None,
+) -> List[dict]:
+    pages: List[dict] = []
 
     for from_unit, to_unit in permutations(units.keys(), 2):
         if allowed_pairs is not None and (from_unit, to_unit) not in allowed_pairs:
@@ -47,6 +53,11 @@ def make_factor_pages(
             {
                 "slug": slug,
                 "title": title,
+                "heading": title,
+                "meta_description": (
+                    f"Convert {from_unit.lower()} to {to_unit.lower()} instantly "
+                    f"with ToolNova free online converter."
+                ),
                 "from_unit": from_unit,
                 "to_unit": to_unit,
                 "factor": factor,
@@ -57,7 +68,7 @@ def make_factor_pages(
     return pages
 
 
-LENGTH_UNITS = {
+LENGTH_UNITS: Dict[str, float] = {
     "Meters": 1.0,
     "Kilometers": 1000.0,
     "Centimeters": 0.01,
@@ -68,7 +79,7 @@ LENGTH_UNITS = {
     "Miles": 1609.344,
 }
 
-WEIGHT_UNITS = {
+WEIGHT_UNITS: Dict[str, float] = {
     "Kilograms": 1.0,
     "Grams": 0.001,
     "Milligrams": 0.000001,
@@ -77,7 +88,7 @@ WEIGHT_UNITS = {
     "Tons": 1000.0,
 }
 
-VOLUME_UNITS = {
+VOLUME_UNITS: Dict[str, float] = {
     "Liters": 1.0,
     "Milliliters": 0.001,
     "Cubic Meters": 1000.0,
@@ -86,7 +97,7 @@ VOLUME_UNITS = {
     "Pints": 0.473176473,
 }
 
-SPEED_UNITS = {
+SPEED_UNITS: Dict[str, float] = {
     "km/h": 0.2777777778,
     "m/s": 1.0,
     "mph": 0.44704,
@@ -94,7 +105,7 @@ SPEED_UNITS = {
     "ft/s": 0.3048,
 }
 
-AREA_UNITS = {
+AREA_UNITS: Dict[str, float] = {
     "Square Meters": 1.0,
     "Square Feet": 0.09290304,
     "Acres": 4046.8564224,
@@ -103,7 +114,7 @@ AREA_UNITS = {
     "Square Kilometers": 1000000.0,
 }
 
-LENGTH_ALLOWED = {
+LENGTH_ALLOWED: Set[Tuple[str, str]] = {
     ("Meters", "Feet"), ("Feet", "Meters"),
     ("Meters", "Inches"), ("Inches", "Meters"),
     ("Meters", "Yards"), ("Yards", "Meters"),
@@ -126,7 +137,7 @@ LENGTH_ALLOWED = {
     ("Millimeters", "Yards"), ("Yards", "Millimeters"),
 }
 
-WEIGHT_ALLOWED = {
+WEIGHT_ALLOWED: Set[Tuple[str, str]] = {
     ("Kilograms", "Pounds"), ("Pounds", "Kilograms"),
     ("Kilograms", "Grams"), ("Grams", "Kilograms"),
     ("Kilograms", "Ounces"), ("Ounces", "Kilograms"),
@@ -138,13 +149,12 @@ WEIGHT_ALLOWED = {
     ("Milligrams", "Kilograms"), ("Kilograms", "Milligrams"),
     ("Grams", "Pounds"), ("Pounds", "Grams"),
     ("Tons", "Ounces"), ("Ounces", "Tons"),
-    ("Kilograms", "Milligrams"), ("Milligrams", "Kilograms"),
     ("Grams", "Tons"), ("Tons", "Grams"),
     ("Pounds", "Milligrams"), ("Milligrams", "Pounds"),
     ("Ounces", "Milligrams"), ("Milligrams", "Ounces"),
 }
 
-VOLUME_ALLOWED = {
+VOLUME_ALLOWED: Set[Tuple[str, str]] = {
     ("Liters", "Gallons"), ("Gallons", "Liters"),
     ("Liters", "Milliliters"), ("Milliliters", "Liters"),
     ("Liters", "Cubic Meters"), ("Cubic Meters", "Liters"),
@@ -158,10 +168,9 @@ VOLUME_ALLOWED = {
     ("Gallons", "Pints"), ("Pints", "Gallons"),
     ("Cubic Meters", "Milliliters"), ("Milliliters", "Cubic Meters"),
     ("Cups", "Pints"), ("Pints", "Cups"),
-    ("Liters", "Pints"), ("Pints", "Liters"),
 }
 
-SPEED_ALLOWED = {
+SPEED_ALLOWED: Set[Tuple[str, str]] = {
     ("km/h", "mph"), ("mph", "km/h"),
     ("km/h", "m/s"), ("m/s", "km/h"),
     ("mph", "m/s"), ("m/s", "mph"),
@@ -174,7 +183,7 @@ SPEED_ALLOWED = {
     ("Knots", "ft/s"), ("ft/s", "Knots"),
 }
 
-AREA_ALLOWED = {
+AREA_ALLOWED: Set[Tuple[str, str]] = {
     ("Square Meters", "Square Feet"), ("Square Feet", "Square Meters"),
     ("Square Meters", "Acres"), ("Acres", "Square Meters"),
     ("Square Meters", "Hectares"), ("Hectares", "Square Meters"),
@@ -188,10 +197,12 @@ AREA_ALLOWED = {
     ("Square Kilometers", "Square Meters"), ("Square Meters", "Square Kilometers"),
 }
 
-TEMPERATURE_PAGES = [
+TEMPERATURE_PAGES: List[dict] = [
     {
         "slug": "celsius-to-fahrenheit",
         "title": "Celsius to Fahrenheit Converter",
+        "heading": "Celsius to Fahrenheit Converter",
+        "meta_description": "Convert Celsius to Fahrenheit instantly with ToolNova free online converter.",
         "from_unit": "Celsius",
         "to_unit": "Fahrenheit",
         "formula": "(x * 9 / 5) + 32",
@@ -200,6 +211,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "fahrenheit-to-celsius",
         "title": "Fahrenheit to Celsius Converter",
+        "heading": "Fahrenheit to Celsius Converter",
+        "meta_description": "Convert Fahrenheit to Celsius instantly with ToolNova free online converter.",
         "from_unit": "Fahrenheit",
         "to_unit": "Celsius",
         "formula": "(x - 32) * 5 / 9",
@@ -208,6 +221,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "celsius-to-kelvin",
         "title": "Celsius to Kelvin Converter",
+        "heading": "Celsius to Kelvin Converter",
+        "meta_description": "Convert Celsius to Kelvin instantly with ToolNova free online converter.",
         "from_unit": "Celsius",
         "to_unit": "Kelvin",
         "formula": "x + 273.15",
@@ -216,6 +231,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "kelvin-to-celsius",
         "title": "Kelvin to Celsius Converter",
+        "heading": "Kelvin to Celsius Converter",
+        "meta_description": "Convert Kelvin to Celsius instantly with ToolNova free online converter.",
         "from_unit": "Kelvin",
         "to_unit": "Celsius",
         "formula": "x - 273.15",
@@ -224,6 +241,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "fahrenheit-to-kelvin",
         "title": "Fahrenheit to Kelvin Converter",
+        "heading": "Fahrenheit to Kelvin Converter",
+        "meta_description": "Convert Fahrenheit to Kelvin instantly with ToolNova free online converter.",
         "from_unit": "Fahrenheit",
         "to_unit": "Kelvin",
         "formula": "((x - 32) * 5 / 9) + 273.15",
@@ -232,6 +251,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "kelvin-to-fahrenheit",
         "title": "Kelvin to Fahrenheit Converter",
+        "heading": "Kelvin to Fahrenheit Converter",
+        "meta_description": "Convert Kelvin to Fahrenheit instantly with ToolNova free online converter.",
         "from_unit": "Kelvin",
         "to_unit": "Fahrenheit",
         "formula": "((x - 273.15) * 9 / 5) + 32",
@@ -240,6 +261,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "celsius-to-rankine",
         "title": "Celsius to Rankine Converter",
+        "heading": "Celsius to Rankine Converter",
+        "meta_description": "Convert Celsius to Rankine instantly with ToolNova free online converter.",
         "from_unit": "Celsius",
         "to_unit": "Rankine",
         "formula": "(x + 273.15) * 9 / 5",
@@ -248,6 +271,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "rankine-to-celsius",
         "title": "Rankine to Celsius Converter",
+        "heading": "Rankine to Celsius Converter",
+        "meta_description": "Convert Rankine to Celsius instantly with ToolNova free online converter.",
         "from_unit": "Rankine",
         "to_unit": "Celsius",
         "formula": "(x - 491.67) * 5 / 9",
@@ -256,6 +281,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "fahrenheit-to-rankine",
         "title": "Fahrenheit to Rankine Converter",
+        "heading": "Fahrenheit to Rankine Converter",
+        "meta_description": "Convert Fahrenheit to Rankine instantly with ToolNova free online converter.",
         "from_unit": "Fahrenheit",
         "to_unit": "Rankine",
         "formula": "x + 459.67",
@@ -264,6 +291,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "rankine-to-fahrenheit",
         "title": "Rankine to Fahrenheit Converter",
+        "heading": "Rankine to Fahrenheit Converter",
+        "meta_description": "Convert Rankine to Fahrenheit instantly with ToolNova free online converter.",
         "from_unit": "Rankine",
         "to_unit": "Fahrenheit",
         "formula": "x - 459.67",
@@ -272,6 +301,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "kelvin-to-rankine",
         "title": "Kelvin to Rankine Converter",
+        "heading": "Kelvin to Rankine Converter",
+        "meta_description": "Convert Kelvin to Rankine instantly with ToolNova free online converter.",
         "from_unit": "Kelvin",
         "to_unit": "Rankine",
         "formula": "x * 9 / 5",
@@ -280,6 +311,8 @@ TEMPERATURE_PAGES = [
     {
         "slug": "rankine-to-kelvin",
         "title": "Rankine to Kelvin Converter",
+        "heading": "Rankine to Kelvin Converter",
+        "meta_description": "Convert Rankine to Kelvin instantly with ToolNova free online converter.",
         "from_unit": "Rankine",
         "to_unit": "Kelvin",
         "formula": "x * 5 / 9",
@@ -287,7 +320,7 @@ TEMPERATURE_PAGES = [
     },
 ]
 
-SEO_UNIT_PAGES = []
+SEO_UNIT_PAGES: List[dict] = []
 SEO_UNIT_PAGES += make_factor_pages("Length", LENGTH_UNITS, LENGTH_ALLOWED)
 SEO_UNIT_PAGES += make_factor_pages("Weight", WEIGHT_UNITS, WEIGHT_ALLOWED)
 SEO_UNIT_PAGES += make_factor_pages("Volume", VOLUME_UNITS, VOLUME_ALLOWED)
@@ -295,4 +328,4 @@ SEO_UNIT_PAGES += make_factor_pages("Speed", SPEED_UNITS, SPEED_ALLOWED)
 SEO_UNIT_PAGES += make_factor_pages("Area", AREA_UNITS, AREA_ALLOWED)
 SEO_UNIT_PAGES += TEMPERATURE_PAGES
 
-SEO_PAGES_BY_SLUG = {page["slug"]: page for page in SEO_UNIT_PAGES}
+SEO_PAGES_BY_SLUG: Dict[str, dict] = {page["slug"]: page for page in SEO_UNIT_PAGES}
