@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Utility Tools{% endblock %}
 {% block meta_description %}Useful free tools like JSON formatter, QR generator, Base64, case converter and more.{% endblock %}
+
 {% block content %}
 <section class="hero" style="background:linear-gradient(135deg,#ea580c 0%,#0f172a 100%);">
     <h1>Utility Tools</h1>
@@ -194,53 +195,125 @@
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script src="https://d3js.org/d3.v3.min.js"></script>
-        <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+        <script src="https://unpkg.com/@mapbox/togeojson@0.16.0/togeojson.js"></script>
 
         <script>
             const map = L.map('kmlMap');
             map.setView([39.0, 35.0], 6);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(map);
+            const topoLayer = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+                {
+                    maxZoom: 19,
+                    attribution: 'Tiles &copy; Esri'
+                }
+            ).addTo(map);
 
-            const kmlText = `{{ kml_map | safe }}`;
-            console.log("KML loaded, length:", kmlText.length);
+            const osmLayer = L.tileLayer(
+                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap'
+                }
+            );
 
-            if (typeof omnivore === "undefined") {
-                console.error("leaflet-omnivore not loaded");
-            } else {
-                try {
-                    const layer = omnivore.kml.parse(kmlText);
+            const baseMaps = {
+                "Topo": topoLayer,
+                "OpenStreetMap": osmLayer
+            };
 
-                    layer.on('ready', function () {
-                        console.log("KML layer ready");
-                        map.addLayer(layer);
+            let drawnLayer = null;
 
-                        try {
-                            const bounds = layer.getBounds();
-                            if (bounds && bounds.isValid()) {
-                                map.fitBounds(bounds, { padding: [20, 20] });
-                            } else {
-                                map.setView([39.0, 35.0], 6);
+            try {
+                const kmlText = `{{ kml_map | safe }}`;
+                const parser = new DOMParser();
+                const kmlDom = parser.parseFromString(kmlText, "text/xml");
+
+                const parseError = kmlDom.getElementsByTagName("parsererror");
+                if (parseError.length > 0) {
+                    console.error("KML XML parse error");
+                } else {
+                    const geojson = toGeoJSON.kml(kmlDom);
+
+                    drawnLayer = L.geoJSON(geojson, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.circleMarker(latlng, {
+                                radius: 8,
+                                color: "#ffffff",
+                                weight: 2,
+                                fillColor: "#e11d48",
+                                fillOpacity: 1
+                            });
+                        },
+
+                        style: function (feature) {
+                            const geomType = feature.geometry ? feature.geometry.type : "";
+
+                            if (geomType === "LineString" || geomType === "MultiLineString") {
+                                return {
+                                    color: "#2563eb",
+                                    weight: 4,
+                                    opacity: 0.95
+                                };
                             }
-                        } catch (e) {
-                            console.error("Bounds error:", e);
+
+                            if (geomType === "Polygon" || geomType === "MultiPolygon") {
+                                return {
+                                    color: "#059669",
+                                    weight: 3,
+                                    opacity: 0.95,
+                                    fillColor: "#10b981",
+                                    fillOpacity: 0.25
+                                };
+                            }
+
+                            return {
+                                color: "#2563eb",
+                                weight: 3
+                            };
+                        },
+
+                        onEachFeature: function (feature, layer) {
+                            let popupHtml = "";
+
+                            if (feature.properties) {
+                                if (feature.properties.name) {
+                                    popupHtml += "<strong>" + feature.properties.name + "</strong><br>";
+                                }
+                                if (feature.properties.description) {
+                                    popupHtml += feature.properties.description;
+                                }
+                            }
+
+                            if (popupHtml.trim() !== "") {
+                                layer.bindPopup(popupHtml);
+                            }
+                        }
+                    }).addTo(map);
+
+                    try {
+                        const bounds = drawnLayer.getBounds();
+                        if (bounds && bounds.isValid()) {
+                            map.fitBounds(bounds, { padding: [20, 20] });
+                        } else {
                             map.setView([39.0, 35.0], 6);
                         }
-                    });
-
-                    layer.on('error', function (e) {
-                        console.error("KML layer error:", e);
+                    } catch (e) {
+                        console.error("Bounds error:", e);
                         map.setView([39.0, 35.0], 6);
-                    });
-                } catch (e) {
-                    console.error("KML parse error:", e);
-                    map.setView([39.0, 35.0], 6);
+                    }
                 }
+            } catch (e) {
+                console.error("KML render error:", e);
+                map.setView([39.0, 35.0], 6);
             }
+
+            const overlayMaps = {};
+            if (drawnLayer) {
+                overlayMaps["KML Layer"] = drawnLayer;
+            }
+
+            L.control.layers(baseMaps, overlayMaps).addTo(map);
         </script>
         {% endif %}
     </div>
