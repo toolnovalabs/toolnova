@@ -2182,10 +2182,11 @@ async def utility_tools(request: Request):
 # --------------------------------------------------
 # STATIC SEO FILES
 # --------------------------------------------------
-
+from app.seo_slug_generator import SEO_SLUGS
 
 @app.get("/sitemap.xml", include_in_schema=False)
 def sitemap():
+
     static_urls = [
         ("https://toolnova.onrender.com/", "1.0"),
         ("https://toolnova.onrender.com/pdf", "0.9"),
@@ -2210,8 +2211,8 @@ def sitemap():
     ]
 
     seo_urls = [
-        (f"https://toolnova.onrender.com/convert/{page['slug']}", "0.7")
-        for page in SEO_UNIT_PAGES
+        (f"https://toolnova.onrender.com/convert/{slug}", "0.7")
+        for slug in SEO_SLUGS
     ]
 
     all_urls = static_urls + seo_urls
@@ -2229,6 +2230,7 @@ def sitemap():
 
     content = "\n".join(xml_parts)
     return Response(content=content, media_type="application/xml")
+
 
 @app.get("/convert/{slug}")
 def convert_seo_page(slug: str, request: Request):
