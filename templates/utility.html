@@ -161,7 +161,7 @@
                 <div class="upload-box">
                     <input type="file" name="file" accept=".kml,.xml" required>
                 </div>
-                <button class="btn-orange" type="submit">View KML</button>
+                <button class="btn-orange" type="submit">View KML on Map</button>
             </form>
         </div>
     </div>
@@ -171,7 +171,7 @@
 
         {% if result %}
         <div class="result">{{ result | safe }}</div>
-        {% else %}
+        {% elif not kml_map %}
         <div class="tool-list">
             <div class="tool-item">
                 <strong>Ready to use</strong>
@@ -182,6 +182,48 @@
 
         {% if error %}
         <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if kml_map %}
+        <div class="card" style="margin-top:20px; padding:0; overflow:hidden;">
+            <div style="padding:18px 22px 0;">
+                <h2 style="margin-bottom:8px;">KML Map Preview</h2>
+            </div>
+            <div id="kmlMap" style="width:100%; height:520px;"></div>
+        </div>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+
+        <script>
+            const map = L.map('kmlMap');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            const kmlText = `{{ kml_map | safe }}`;
+            const layer = omnivore.kml.parse(kmlText);
+
+            layer.on('ready', function () {
+                map.addLayer(layer);
+                try {
+                    const bounds = layer.getBounds();
+                    if (bounds && bounds.isValid()) {
+                        map.fitBounds(bounds, { padding: [20, 20] });
+                    } else {
+                        map.setView([39.0, 35.0], 6);
+                    }
+                } catch (e) {
+                    map.setView([39.0, 35.0], 6);
+                }
+            });
+
+            layer.on('error', function () {
+                map.setView([39.0, 35.0], 6);
+            });
+        </script>
         {% endif %}
     </div>
 </div>

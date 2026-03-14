@@ -2099,8 +2099,6 @@ async def csv_viewer(request: Request, file: UploadFile = File(...)):
             "utility.html",
             {"request": request, "result": None, "error": f"Error: {str(e)}", "plan": get_current_plan(request)},
         )
-
-
 @app.post("/kml-viewer", response_class=HTMLResponse)
 async def kml_viewer(request: Request, file: UploadFile = File(...)):
     try:
@@ -2109,18 +2107,29 @@ async def kml_viewer(request: Request, file: UploadFile = File(...)):
         validate_size_by_plan(len(data), limits["office_general_max_bytes"], "KML Viewer")
 
         text = data.decode("utf-8", errors="ignore")
-        preview = text[:limits["text_preview_max_chars"]]
 
         return templates.TemplateResponse(
             "utility.html",
-            {"request": request, "result": preview, "error": None, "plan": get_current_plan(request)},
+            {
+                "request": request,
+                "result": None,
+                "kml_map": text,
+                "error": None,
+                "plan": get_current_plan(request),
+            },
         )
     except Exception as e:
         return templates.TemplateResponse(
             "utility.html",
-            {"request": request, "result": None, "error": f"Error: {str(e)}", "plan": get_current_plan(request)},
+            {
+                "request": request,
+                "result": None,
+                "kml_map": None,
+                "error": f"Error: {str(e)}",
+                "plan": get_current_plan(request),
+            },
+            status_code=500 if not isinstance(e, ValueError) else 400,
         )
-
 
 # --------------------------------------------------
 # SEO PAGES
